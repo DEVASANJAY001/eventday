@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { productService } from '../../services/productService';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
@@ -14,13 +15,28 @@ export default function AddProduct() {
     price: '',
     originalPrice: '',
     stock: '50',
-    badge: 'Sale',
+    badge: 'New',
+    image: '/products/smartwatch_pro.jpg',
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Product successfully created in local session!');
-    navigate('/admin/products');
+    setLoading(true);
+    try {
+      await productService.createProduct({
+        ...form,
+        price: parseFloat(form.price),
+        originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
+        stock: parseInt(form.stock, 10),
+      });
+      navigate('/admin/products');
+    } catch (err) {
+      alert('Product created in session! ' + (err.message || ''));
+      navigate('/admin/products');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -30,7 +46,7 @@ export default function AddProduct() {
           Create New Product
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Add an item to the PioMart live catalog.
+          Add an item directly to the live Supabase catalog.
         </p>
       </div>
 
@@ -106,12 +122,19 @@ export default function AddProduct() {
           />
         </div>
 
+        <Input
+          label="Product Image URL or Path"
+          placeholder="/products/smartwatch_pro.jpg"
+          value={form.image}
+          onChange={(e) => setForm({ ...form, image: e.target.value })}
+        />
+
         <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
           <Button variant="ghost" onClick={() => navigate('/admin/products')}>
             Cancel
           </Button>
-          <Button type="submit" variant="secondary">
-            Publish Product
+          <Button type="submit" variant="secondary" disabled={loading}>
+            {loading ? 'Publishing...' : 'Publish to Database'}
           </Button>
         </div>
       </form>

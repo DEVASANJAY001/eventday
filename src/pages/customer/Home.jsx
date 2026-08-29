@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 
 export default function Home() {
   const { addToCart } = useCart();
   const [dealTab, setDealTab] = useState('all');
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+
+  // Load products from Supabase
+  useEffect(() => {
+    productService.getProducts().then(setProducts).catch(() => {});
+
+    const unsubscribe = productService.subscribeToProducts(() => {
+      productService.getProducts().then(setProducts).catch(() => {});
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Countdown timer simulation for Weekly Deals
   const [timeLeft, setTimeLeft] = useState({
@@ -38,8 +51,8 @@ export default function Home() {
     { id: 'home', label: 'Home & Living' },
   ];
 
-  const featuredDeals = MOCK_PRODUCTS.filter(p => p.isDeal).slice(0, 5);
-  const featuredTrending = MOCK_PRODUCTS.slice(0, 8);
+  const featuredDeals = products.filter(p => p.isDeal).slice(0, 5);
+  const featuredTrending = products.slice(0, 8);
 
   return (
     <div className="flex flex-col w-full font-body-md text-on-surface">

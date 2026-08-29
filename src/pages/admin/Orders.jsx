@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { orderService } from '../../services/orderService';
 import { useCart } from '../../context/CartContext';
 import Badge from '../../components/ui/Badge';
 
 export default function Orders() {
-  const { orders } = useCart();
+  const { orders: localOrders } = useCart();
+  const [ordersList, setOrdersList] = useState(localOrders);
+
+  const loadOrders = () => {
+    orderService.getAllOrders().then(data => {
+      if (data && data.length > 0) setOrdersList(data);
+    }).catch(() => {});
+  };
+
+  useEffect(() => {
+    loadOrders();
+    const unsubscribe = orderService.subscribeToOrders(() => {
+      loadOrders();
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -13,7 +29,7 @@ export default function Orders() {
           Customer Orders
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Track fulfillment status, payment gateways, and shipping invoices.
+          Track fulfillment status, payment gateways, and shipping invoices in Supabase.
         </p>
       </div>
 
@@ -31,7 +47,7 @@ export default function Orders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20 text-on-surface">
-            {orders.map((o) => (
+            {ordersList.map((o) => (
               <tr key={o.id} className="hover:bg-surface-container-low/50 transition-colors">
                 <td className="p-4 font-headline-md font-bold text-primary text-sm">
                   {o.id}

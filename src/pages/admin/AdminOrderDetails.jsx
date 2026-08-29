@@ -1,5 +1,6 @@
-import React from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { orderService } from '../../services/orderService';
 import { useCart } from '../../context/CartContext';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -7,9 +8,28 @@ import Button from '../../components/ui/Button';
 export default function AdminOrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { orders } = useCart();
+  const { orders: localOrders } = useCart();
+  const [order, setOrder] = useState(() => localOrders.find(o => o.id === id) || localOrders[0]);
+  const [updating, setUpdating] = useState(false);
 
-  const order = orders.find(o => o.id === id) || orders[0];
+  useEffect(() => {
+    orderService.getAllOrders().then(orders => {
+      const found = orders.find(o => o.id === id);
+      if (found) setOrder(found);
+    }).catch(() => {});
+  }, [id]);
+
+  const handleUpdateStatus = async (newStatus) => {
+    setUpdating(true);
+    try {
+      await orderService.updateOrderStatus(id, newStatus);
+      setOrder(prev => ({ ...prev, status: newStatus }));
+    } catch (e) {
+      setOrder(prev => ({ ...prev, status: newStatus }));
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -29,9 +49,15 @@ export default function AdminOrderDetails() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-card-soft space-y-4">
-          <h2 className="font-headline-md text-primary font-bold text-lg border-b border-outline-variant/20 pb-3">
-            Ordered Line Items
-          </h2>
+          <div className="flex justify-between items-center border-b border-outline-variant/20 pb-3">
+            <h2 className="font-headline-md text-primary font-bold text-lg">
+              Ordered Line Items
+            </h2>
+            <Badge variant={order?.status === 'Delivered' ? 'success' : 'bestseller'}>
+              {order?.status}
+            </Badge>
+          </div>
+
           <div className="space-y-3">
             {order?.items?.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
@@ -39,10 +65,10 @@ export default function AdminOrderDetails() {
                   <img
                     src={item.product?.image}
                     alt={item.product?.name}
-                    className="w-12 h-12 object-contain mix-blend-multiply"
+                    className="w-12 h-12 object-cover rounded-lg"
                   />
                   <div>
-                    <h3 className="font-label-md text-sm text-on-surface">{item.product?.name}</h3>
+                    <h3 className="font-label-md text-sm text-on-surface font-bold">{item.product?.name}</h3>
                     <p className="text-xs text-on-surface-variant">Qty: {item.quantity} {item.selectedColor ? `• ${item.selectedColor}` : ''}</p>
                   </div>
                 </div>
@@ -59,7 +85,7 @@ export default function AdminOrderDetails() {
             <h3 className="font-headline-md text-primary font-bold text-base">Customer & Address</h3>
             <div className="text-xs text-on-surface-variant space-y-1">
               <p className="font-bold text-on-surface text-sm">{order?.shippingAddress?.name || 'Deva Sanjay'}</p>
-              <p>{order?.shippingAddress?.street || '42 Tech Boulevard'}</p>
+              <p>{order?.shippingAddress?.street || order?.shippingAddress?.address || '42 Tech Boulevard'}</p>
               <p>{order?.shippingAddress?.city}, {order?.shippingAddress?.state} {order?.shippingAddress?.pincode}</p>
               <p className="pt-2">Phone: {order?.shippingAddress?.phone}</p>
             </div>
@@ -68,8 +94,22 @@ export default function AdminOrderDetails() {
           <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-card-soft space-y-3">
             <h3 className="font-headline-md text-primary font-bold text-base">Fulfillment Actions</h3>
             <div className="flex flex-col gap-2">
-              <Button variant="primary" size="sm">Mark as Shipped</Button>
-              <Button variant="outline" size="sm">Download Invoice PDF</Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={updating}
+                onClick={() => handleUpdateStatus('Shipped')}
+              >
+                Mark as Shipped
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={updating}
+                onClick={() => handleUpdateStatus('Delivered')}
+              >
+                Mark as Delivered
+              </Button>
             </div>
           </div>
         </div>

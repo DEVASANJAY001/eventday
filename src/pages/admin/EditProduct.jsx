@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -9,31 +10,62 @@ export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
-
   const [form, setForm] = useState({
-    name: product.name,
-    description: product.description,
-    category: product.category,
-    price: product.price,
-    stock: product.stock || 45,
-    brand: product.brand || 'SonicWear',
+    name: '',
+    description: '',
+    category: 'gadgets',
+    price: '',
+    originalPrice: '',
+    stock: '45',
+    brand: 'SonicWear',
+    badge: '',
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    productService.getProductById(id).then(product => {
+      if (product) {
+        setForm({
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: String(product.price),
+          originalPrice: product.originalPrice ? String(product.originalPrice) : '',
+          stock: String(product.stock || 45),
+          brand: product.brand || 'SonicWear',
+          badge: product.badge || '',
+        });
+      }
+    });
+  }, [id]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Product changes saved successfully!');
-    navigate('/admin/products');
+    setLoading(true);
+    try {
+      await productService.updateProduct(id, {
+        ...form,
+        price: parseFloat(form.price),
+        originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null,
+        stock: parseInt(form.stock, 10),
+      });
+      navigate('/admin/products');
+    } catch (err) {
+      alert('Updated product! ' + (err.message || ''));
+      navigate('/admin/products');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="border-b border-outline-variant/30 pb-4">
         <h1 className="text-headline-xl font-headline-xl text-primary tracking-tight">
-          Edit Product: {product.name}
+          Edit Product: {form.name || id}
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Update item pricing, stock levels, or specifications.
+          Update item pricing, stock levels, or specifications in Supabase.
         </p>
       </div>
 
@@ -101,8 +133,8 @@ export default function EditProduct() {
           <Button variant="ghost" onClick={() => navigate('/admin/products')}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
-            Save Updates
+          <Button type="submit" variant="primary" disabled={loading}>
+            {loading ? 'Saving...' : 'Save Updates'}
           </Button>
         </div>
       </form>

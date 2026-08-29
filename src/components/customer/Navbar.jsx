@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
   const navigate = useNavigate();
   const { totalCartCount, wishlistIds } = useCart();
+  const { user, profile, isAdmin, signOut } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -13,6 +18,23 @@ export default function Navbar() {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
+
+  const handleSignOut = async () => {
+    setUserMenuOpen(false);
+    await signOut();
+    navigate('/');
+  };
+
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navCategories = [
     { label: 'All Products', path: '/products' },
@@ -22,6 +44,9 @@ export default function Navbar() {
     { label: 'Home', path: '/category/home' },
     { label: 'Special Offers', path: '/category/special-offers', isSpecial: true },
   ];
+
+  const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEeZukfD0PyCs7V-ESAVDJOih52NKMIKtgqRy2TfbaHp6bgvBzfimSJR7o9YGazDasJF1Q4dG98hVfgb0cr_vRzM1_JqXupRrQBXiKSZIIGM-LLFByGTfJ5NnQ70Xrnd14nQ3nWZyiRjEDxxN-c2mKP6xdjpNLFMlD4K8_DVV4IooNFYByVFExdd8-03Q8rS9WDtrNqeVaCx0Hs4oCaB0U2BvHR0QHeKW_klE4eI2bNaQfJQE89w';
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account';
 
   return (
     <header className="fixed top-0 w-full z-50 bg-surface/95 backdrop-blur-md shadow-nav-subtle transition-all">
@@ -85,29 +110,112 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* User Profile */}
-          <Link
-            to="/profile"
-            className="flex items-center gap-stack-sm ml-1 md:ml-stack-sm p-1 rounded-full hover:bg-surface-container transition-colors"
-            title="My Profile"
-          >
-            <img
-              alt="Profile"
-              className="w-8 h-8 md:w-9 md:h-9 rounded-full object-cover ring-2 ring-surface-variant"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEeZukfD0PyCs7V-ESAVDJOih52NKMIKtgqRy2TfbaHp6bgvBzfimSJR7o9YGazDasJF1Q4dG98hVfgb0cr_vRzM1_JqXupRrQBXiKSZIIGM-LLFByGTfJ5NnQ70Xrnd14nQ3nWZyiRjEDxxN-c2mKP6xdjpNLFMlD4K8_DVV4IooNFYByVFExdd8-03Q8rS9WDtrNqeVaCx0Hs4oCaB0U2BvHR0QHeKW_klE4eI2bNaQfJQE89w"
-            />
-            <span className="hidden lg:block font-label-md text-label-md text-on-surface-variant pr-2">
-              Account
-            </span>
-          </Link>
+          {/* User Auth Section */}
+          {user ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen(prev => !prev)}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-surface-container transition-colors"
+              >
+                <img
+                  alt={displayName}
+                  className="w-8 h-8 md:w-9 md:h-9 rounded-full object-cover ring-2 ring-primary/20"
+                  src={userAvatar}
+                />
+                <span className="hidden lg:block font-label-md text-label-md text-on-surface-variant pr-1">
+                  {displayName.split(' ')[0]}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
+                  expand_more
+                </span>
+              </button>
 
-          {/* Admin Switch Link */}
-          <Link
-            to="/admin/dashboard"
-            className="hidden sm:inline-flex text-[11px] font-semibold bg-surface-container-high text-on-surface-variant hover:text-primary px-2.5 py-1 rounded-md transition-colors"
-          >
-            Admin
-          </Link>
+              {/* Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-xl py-2 z-50 space-y-1">
+                  <div className="px-4 py-2 border-b border-outline-variant/20">
+                    <p className="font-label-md text-xs text-on-surface font-bold truncate">{displayName}</p>
+                    <p className="text-[11px] text-on-surface-variant truncate">{user.email}</p>
+                    {isAdmin && (
+                      <span className="inline-block bg-primary-fixed text-primary text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">
+                        Administrator
+                      </span>
+                    )}
+                  </div>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-secondary hover:bg-surface-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                      Admin Dashboard
+                    </Link>
+                  )}
+
+                  <Link
+                    to="/orders"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                    My Orders
+                  </Link>
+
+                  <Link
+                    to="/wishlist"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">favorite</span>
+                    My Wishlist
+                  </Link>
+
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">account_circle</span>
+                    Profile Settings
+                  </Link>
+
+                  <div className="border-t border-outline-variant/20 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs text-error hover:bg-error/5 transition-colors text-left"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">logout</span>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-label-md hover:bg-primary-container transition-all shadow-sm"
+              >
+                Sign In
+              </Link>
+            </div>
+          )}
+
+          {/* Admin Direct Button for Admins */}
+          {isAdmin && (
+            <Link
+              to="/admin/dashboard"
+              className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold bg-primary text-on-primary hover:bg-primary-container px-3 py-1.5 rounded-full transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[14px]">shield</span>
+              Admin
+            </Link>
+          )}
         </div>
       </div>
 

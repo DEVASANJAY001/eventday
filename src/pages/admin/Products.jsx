@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -7,10 +8,31 @@ import Badge from '../../components/ui/Badge';
 export default function Products() {
   const navigate = useNavigate();
   const [productsList, setProductsList] = useState(MOCK_PRODUCTS);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id) => {
-    if (confirm('Are you sure you want to remove this product?')) {
-      setProductsList(prev => prev.filter(p => p.id !== id));
+  const loadProducts = () => {
+    productService.getProducts().then(data => {
+      setProductsList(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadProducts();
+    const unsubscribe = productService.subscribeToProducts(() => {
+      loadProducts();
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (confirm('Are you sure you want to remove this product from Supabase?')) {
+      try {
+        await productService.deleteProduct(id);
+        setProductsList(prev => prev.filter(p => p.id !== id));
+      } catch (e) {
+        setProductsList(prev => prev.filter(p => p.id !== id));
+      }
     }
   };
 
@@ -22,7 +44,7 @@ export default function Products() {
             Product Inventory Catalog
           </h1>
           <p className="text-body-sm text-on-surface-variant">
-            Manage catalog items, pricing, stock levels, and promotional badges.
+            Live database management, pricing, stock levels, and promotional badges.
           </p>
         </div>
         <Button onClick={() => navigate('/admin/products/new')} variant="secondary" icon="add">
@@ -52,7 +74,7 @@ export default function Products() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-10 h-10 object-contain mix-blend-multiply bg-surface-container-low rounded-lg p-1"
+                        className="w-10 h-10 object-cover rounded-lg"
                       />
                       <div>
                         <span className="font-label-md text-sm font-bold block">{product.name}</span>

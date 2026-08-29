@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = (searchParams.get('q') || '').trim().toLowerCase();
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+
+  useEffect(() => {
+    productService.getProducts().then(setProducts).catch(() => {});
+  }, []);
 
   const results = query
-    ? MOCK_PRODUCTS.filter(p => 
+    ? products.filter(p => 
         p.name.toLowerCase().includes(query) ||
         (p.subtitle && p.subtitle.toLowerCase().includes(query)) ||
         (p.brand && p.brand.toLowerCase().includes(query)) ||
         (p.category && p.category.toLowerCase().includes(query)) ||
         (p.description && p.description.toLowerCase().includes(query))
       )
-    : MOCK_PRODUCTS;
+    : products;
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-gutter">

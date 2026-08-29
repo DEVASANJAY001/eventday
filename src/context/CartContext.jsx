@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { MOCK_PRODUCTS } from '../data/mockProducts';
+import { orderService } from '../services/orderService';
+import { couponService } from '../services/couponService';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  // Pre-seed cart with 2 initial items if empty for immediate Stitch parity
+  const { user } = useAuth();
+
+  // Cart state stored in localStorage
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_cart');
@@ -12,18 +17,17 @@ export function CartProvider({ children }) {
     } catch (e) {
       console.error(e);
     }
-    // Default initial items matching Stitch Shopping Cart screen
     return [
       {
         id: 'cart-1',
-        product: MOCK_PRODUCTS[0], // Wilson Ultra Pro Smartwatch
+        product: MOCK_PRODUCTS[0],
         quantity: 1,
         selectedColor: 'Midnight Black',
         selectedSize: 'Medium',
       },
       {
         id: 'cart-2',
-        product: MOCK_PRODUCTS[1], // Silence V2 Wireless ANC
+        product: MOCK_PRODUCTS[1],
         quantity: 1,
         selectedColor: 'Arctic White',
         selectedSize: 'Universal',
@@ -31,6 +35,7 @@ export function CartProvider({ children }) {
     ];
   });
 
+  // Wishlist IDs stored in localStorage
   const [wishlistIds, setWishlistIds] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_wishlist');
@@ -41,13 +46,12 @@ export function CartProvider({ children }) {
     return ['prod-1', 'prod-3'];
   });
 
+  // Orders state
   const [orders, setOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_orders');
       if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
     return [
       {
         id: 'ORD-89241',
@@ -72,45 +76,64 @@ export function CartProvider({ children }) {
 
   const [coupon, setCoupon] = useState({ code: '', discountPercent: 0, applied: false });
 
+  // Sync with Supabase orders when user changes or orders change
+  useEffect(() => {
+    if (user?.id || user?.email) {
+      orderService.getUserOrders(user.id, user.email).then(remoteOrders => {
+        if (remoteOrders && remoteOrders.length > 0) {
+          setOrders(remoteOrders);
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
+
+  // Realtime subscription for orders
+  useEffect(() => {
+    const unsubscribe = orderService.subscribeToOrders(() => {
+      if (user?.id || user?.email) {
+        orderService.getUserOrders(user.id, user.email).then(remoteOrders => {
+          if (remoteOrders && remoteOrders.length > 0) {
+            setOrders(remoteOrders);
+          }
+        }).catch(() => {});
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
+
   useEffect(() => {
     try {
       localStorage.setItem('piomart_cart', JSON.stringify(cartItems));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }, [cartItems]);
 
   useEffect(() => {
     try {
       localStorage.setItem('piomart_wishlist', JSON.stringify(wishlistIds));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }, [wishlistIds]);
 
   useEffect(() => {
     try {
       localStorage.setItem('piomart_orders', JSON.stringify(orders));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }, [orders]);
 
   const addToCart = (product, quantity = 1, selectedColor = '', selectedSize = '') => {
     setCartItems(prev => {
-      const existingIndex = prev.findIndex(item => 
-        item.product.id === product.id && 
-        item.selectedColor === (selectedColor || product.colors?.[0]?.name || '') &&
-        item.selectedSize === (selectedSize || product.sizes?.[0] || '')
+      const existingIndex = prev.findIndex(
+        item => item.product.id === product.id &&
+                item.selectedColor === selectedColor &&
+                item.selectedSize === selectedSize
       );
 
       if (existingIndex > -1) {
-        const copy = [...prev];
-        copy[existingIndex] = {
-          ...copy[existingIndex],
-          quantity: copy[existingIndex].quantity + quantity
-        };
-        return copy;
+        const updated = [...prev];
+        updated[existingIndex].quantity += quantity;
+        return updated;
       }
 
       return [
@@ -119,9 +142,9 @@ export function CartProvider({ children }) {
           id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
           product,
           quantity,
-          selectedColor: selectedColor || product.colors?.[0]?.name || '',
-          selectedSize: selectedSize || product.sizes?.[0] || '',
-        }
+          selectedColor: selectedColor || (product.colors?.[0]?.name || ''),
+          selectedSize: selectedSize || (product.sizes?.[0] || 'Standard'),
+        },
       ];
     });
   };
@@ -130,89 +153,106 @@ export function CartProvider({ children }) {
     setCartItems(prev => prev.filter(item => item.id !== cartItemId));
   };
 
-  const updateQuantity = (cartItemId, newQty) => {
-    if (newQty <= 0) {
+  const updateQuantity = (cartItemId, newQuantity) => {
+    if (newQuantity <= 0) {
       removeFromCart(cartItemId);
       return;
     }
-    setCartItems(prev => prev.map(item => item.id === cartItemId ? { ...item, quantity: newQty } : item));
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+      )
+    );
   };
 
   const clearCart = () => {
     setCartItems([]);
-    setCoupon({ code: '', discountPercent: 0, applied: false });
   };
 
   const toggleWishlist = (productId) => {
-    setWishlistIds(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
+    setWishlistIds(prev =>
+      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
     );
   };
 
   const isInWishlist = (productId) => wishlistIds.includes(productId);
 
-  const applyCoupon = (code) => {
-    const clean = (code || '').trim().toUpperCase();
-    if (clean === 'SAVE10') {
-      setCoupon({ code: 'SAVE10', discountPercent: 10, applied: true });
-      return { success: true, message: '10% discount applied!' };
-    } else if (clean === 'WELCOME20') {
-      setCoupon({ code: 'WELCOME20', discountPercent: 20, applied: true });
-      return { success: true, message: '20% special discount applied!' };
+  const applyCoupon = async (code) => {
+    const result = await couponService.validateCoupon(code);
+    if (result.valid) {
+      setCoupon({
+        code: result.code,
+        discountPercent: result.discountPercent,
+        applied: true,
+      });
+      return { success: true, message: `Coupon ${result.code} applied (${result.discount})!` };
     }
-    return { success: false, message: 'Invalid coupon code. Try SAVE10 or WELCOME20' };
+    return { success: false, message: result.message || 'Invalid coupon code.' };
   };
 
-  const createOrder = (shippingInfo, paymentMethod) => {
-    const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newOrder = {
-      id: orderId,
-      date: new Date().toISOString().split('T')[0],
-      amount: finalTotal,
-      status: 'Processing',
-      paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid',
-      paymentMethod,
-      items: [...cartItems],
-      shippingAddress: shippingInfo,
-      couponApplied: coupon.applied ? coupon.code : null,
-    };
-
-    setOrders(prev => [newOrder, ...prev]);
-    clearCart();
-    return newOrder;
+  const removeCoupon = () => {
+    setCoupon({ code: '', discountPercent: 0, applied: false });
   };
 
-  // Calculations
-  const subtotal = cartItems.reduce((acc, item) => acc + ((item.product.price || 0) * item.quantity), 0);
-  const discountAmount = coupon.applied ? (subtotal * coupon.discountPercent / 100) : 0;
+  // Price calculations
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.product.price * item.quantity,
+    0
+  );
+
+  const discountAmount = coupon.applied
+    ? (subtotal * coupon.discountPercent) / 100
+    : 0;
+
   const shipping = subtotal > 50 || subtotal === 0 ? 0 : 9.99;
-  const tax = (subtotal - discountAmount) > 0 ? ((subtotal - discountAmount) * 0.08) : 0;
+  const tax = subtotal * 0.08;
   const finalTotal = Math.max(0, subtotal - discountAmount + shipping + tax);
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  return (
-    <CartContext.Provider value={{
-      cartItems,
-      totalCartCount,
-      wishlistIds,
-      orders,
+  const createOrder = async (shippingAddress, paymentMethod = 'Credit Card') => {
+    const newOrder = await orderService.createOrder({
+      userId: user?.id || null,
+      userEmail: user?.email || shippingAddress?.email || '',
+      items: [...cartItems],
+      shippingAddress,
+      paymentMethod,
       subtotal,
       discountAmount,
       shipping,
       tax,
-      finalTotal,
-      coupon,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      toggleWishlist,
-      isInWishlist,
-      applyCoupon,
-      createOrder,
-    }}>
+      totalAmount: finalTotal,
+    });
+
+    setOrders(prev => [newOrder, ...prev]);
+    clearCart();
+    removeCoupon();
+    return newOrder;
+  };
+
+  const value = {
+    cartItems,
+    totalCartCount,
+    wishlistIds,
+    orders,
+    subtotal,
+    discountAmount,
+    shipping,
+    tax,
+    finalTotal,
+    coupon,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    toggleWishlist,
+    isInWishlist,
+    applyCoupon,
+    removeCoupon,
+    createOrder,
+  };
+
+  return (
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

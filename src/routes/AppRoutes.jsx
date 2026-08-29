@@ -21,6 +21,16 @@ import Profile from '../pages/customer/Profile';
 import Addresses from '../pages/customer/Addresses';
 import Settings from '../pages/customer/Settings';
 
+// Auth Pages
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
+import AdminLogin from '../pages/auth/AdminLogin';
+import AdminRegister from '../pages/auth/AdminRegister';
+
+// Route Guards
+import AdminRoute from './AdminRoute';
+import ProtectedRoute from './ProtectedRoute';
+
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard';
 import Products from '../pages/admin/Products';
@@ -46,7 +56,7 @@ export default function AppRoutes() {
     <BrowserRouter>
       <ScrollManager />
       <Routes>
-        {/* Customer Route Group */}
+        {/* Customer Public & Layout Routes */}
         <Route element={<CustomerLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductCatalog />} />
@@ -55,30 +65,44 @@ export default function AppRoutes() {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-success" element={<OrderSuccess />} />
-          <Route path="/orders" element={<CustomerOrders />} />
-          <Route path="/orders/:id" element={<OrderDetails />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/addresses" element={<Addresses />} />
-          <Route path="/profile/settings" element={<Settings />} />
+          
+          {/* Customer Auth Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Customer Protected Pages */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
+            <Route path="/orders" element={<CustomerOrders />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/addresses" element={<Addresses />} />
+            <Route path="/profile/settings" element={<Settings />} />
+          </Route>
         </Route>
 
-        {/* Admin Route Group */}
-        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route element={<AdminLayout />}>
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/products" element={<Products />} />
-          <Route path="/admin/products/new" element={<AddProduct />} />
-          <Route path="/admin/products/:id/edit" element={<EditProduct />} />
-          <Route path="/admin/categories" element={<Categories />} />
-          <Route path="/admin/orders" element={<Orders />} />
-          <Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
-          <Route path="/admin/customers" element={<Customers />} />
-          <Route path="/admin/inventory" element={<Inventory />} />
-          <Route path="/admin/coupons" element={<Coupons />} />
-          <Route path="/admin/analytics" element={<Analytics />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+        {/* Dedicated Admin Auth Routes (Standalone) */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/register" element={<AdminRegister />} />
+
+        {/* Admin Protected Routes Group (Requires Admin Role) */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="products/new" element={<AddProduct />} />
+            <Route path="products/:id/edit" element={<EditProduct />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="orders/:id" element={<AdminOrderDetails />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="coupons" element={<Coupons />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
         </Route>
 
         {/* Global 404 Fallback */}

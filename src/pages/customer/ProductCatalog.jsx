@@ -1,16 +1,33 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
 import FilterPanel from '../../components/customer/FilterPanel';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 
 export default function ProductCatalog() {
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [loading, setLoading] = useState(true);
+
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedPriceRanges, setSelectedPriceRanges] = useState(['50-100']);
-  const [selectedBrands, setSelectedBrands] = useState(['SonicWear']);
+  const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    productService.getProducts().then((data) => {
+      setProducts(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+
+    const unsubscribe = productService.subscribeToProducts(() => {
+      productService.getProducts().then(setProducts).catch(() => {});
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleTogglePriceRange = (rangeId) => {
     setSelectedPriceRanges(prev => 
@@ -33,7 +50,7 @@ export default function ProductCatalog() {
 
   // Filtered & Sorted list
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter(p => {
+    return products.filter(p => {
       // Category
       if (selectedCategory && p.category !== selectedCategory) return false;
 
@@ -62,12 +79,11 @@ export default function ProductCatalog() {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
       if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
-      return 0; // featured
+      return 0;
     });
-  }, [selectedCategory, selectedPriceRanges, selectedBrands, minRating, sortBy]);
+  }, [products, selectedCategory, selectedPriceRanges, selectedBrands, minRating, sortBy]);
 
-  // Fallback to all products if specific demo filter yields 0
-  const displayProducts = filteredProducts.length > 0 ? filteredProducts : MOCK_PRODUCTS;
+  const displayProducts = filteredProducts;
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-gutter">
@@ -91,7 +107,7 @@ export default function ProductCatalog() {
 
           <div className="flex items-center gap-stack-md flex-wrap">
             <span className="text-body-sm text-on-surface-variant font-medium">
-              Showing {displayProducts.length} of {MOCK_PRODUCTS.length} products
+              Showing {displayProducts.length} of {products.length} products
             </span>
 
             {/* Sort Dropdown */}

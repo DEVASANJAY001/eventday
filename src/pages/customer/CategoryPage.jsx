@@ -1,20 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../../data/mockProducts';
 
 export default function CategoryPage() {
   const { category } = useParams();
   const normalizedCategory = (category || '').toLowerCase();
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [categories, setCategories] = useState(MOCK_CATEGORIES);
 
-  const categoryMeta = MOCK_CATEGORIES.find(c => c.slug === normalizedCategory) || {
+  useEffect(() => {
+    productService.getProducts().then(setProducts).catch(() => {});
+    productService.getCategories().then(setCategories).catch(() => {});
+  }, []);
+
+  const categoryMeta = categories.find(c => c.slug === normalizedCategory) || {
     name: category?.charAt(0).toUpperCase() + category?.slice(1),
     description: `Explore our collection of ${category}`,
   };
 
-  const products = normalizedCategory === 'all' || normalizedCategory === 'special-offers'
-    ? (normalizedCategory === 'special-offers' ? MOCK_PRODUCTS.filter(p => p.isDeal) : MOCK_PRODUCTS)
-    : MOCK_PRODUCTS.filter(p => p.category === normalizedCategory);
+  const filteredProducts = normalizedCategory === 'all' || normalizedCategory === 'special-offers'
+    ? (normalizedCategory === 'special-offers' ? products.filter(p => p.isDeal) : products)
+    : products.filter(p => p.category === normalizedCategory);
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-gutter">
@@ -46,7 +54,7 @@ export default function CategoryPage() {
             {categoryMeta.icon || 'inventory_2'}
           </span>
           <div>
-            <span className="block font-headline-md text-primary font-bold">{products.length}</span>
+            <span className="block font-headline-md text-primary font-bold">{filteredProducts.length}</span>
             <span className="text-xs text-on-surface-variant">Available Items</span>
           </div>
         </div>
@@ -54,7 +62,7 @@ export default function CategoryPage() {
 
       {/* Product Grid */}
       <div className="mt-4">
-        <ProductGrid products={products} columns={4} />
+        <ProductGrid products={filteredProducts} columns={4} />
       </div>
     </div>
   );

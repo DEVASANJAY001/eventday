@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 import ProductGrid from '../../components/customer/ProductGrid';
@@ -10,15 +11,33 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
-  const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
+  const [product, setProduct] = useState(() => MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0]);
+  const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
+
+  useEffect(() => {
+    productService.getProductById(id).then(data => {
+      if (data) setProduct(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+
+    productService.getProducts().then(setAllProducts).catch(() => {});
+  }, [id]);
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0]?.name || '');
-  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0] || 'Medium');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setSelectedColor(product.colors?.[0]?.name || '');
+      setSelectedSize(product.sizes?.[0] || 'Medium');
+    }
+  }, [product]);
 
   if (!product) {
     return (
