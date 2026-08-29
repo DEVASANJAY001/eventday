@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { orderService } from '../../services/orderService';
+import { productService } from '../../services/productService';
+import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import EmptyState from '../../components/ui/EmptyState';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -15,9 +17,12 @@ export default function OrderDetails() {
 
   const [order, setOrder] = useState(() => orders.find(o => o.id === id) || null);
   const [loading, setLoading] = useState(!order);
+  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
   const [buyAgainToast, setBuyAgainToast] = useState('');
 
   useEffect(() => {
+    productService.getProducts().then(setAllProducts).catch(() => {});
+
     // Check if order is already in context
     const localMatch = orders.find(o => o.id === id);
     if (localMatch) {
@@ -89,15 +94,15 @@ export default function OrderDetails() {
         <div className="fixed bottom-6 right-6 z-50 bg-primary text-on-primary px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
           <span className="material-symbols-outlined text-secondary-container">shopping_cart</span>
           <span className="text-xs font-bold">{buyAgainToast}</span>
-          <Link to="/cart" className="underline text-xs text-secondary ml-2">View Cart</Link>
+          <Link to="/cart" className="underline text-xs text-secondary ml-2 font-bold">View Cart</Link>
         </div>
       )}
 
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-label-sm text-on-surface-variant uppercase tracking-wider mb-stack-sm print:hidden">
-        <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+        <Link to="/" className="hover:text-primary transition-colors font-medium">Home</Link>
         <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-        <Link to="/orders" className="hover:text-primary transition-colors">My Orders</Link>
+        <Link to="/orders" className="hover:text-primary transition-colors font-medium">My Orders</Link>
         <span className="material-symbols-outlined text-[16px]">chevron_right</span>
         <span className="text-primary font-bold">{order.id}</span>
       </div>
@@ -167,67 +172,86 @@ export default function OrderDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column: Ordered Items */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 shadow-card-soft space-y-4">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 md:p-8 shadow-card-soft space-y-4">
             <div className="flex justify-between items-center border-b border-outline-variant/20 pb-3">
               <h2 className="font-headline-md text-lg text-primary font-bold">
-                Purchased Products ({items.length})
+                Purchased Products & Specifications ({items.length})
               </h2>
-              <span className="text-xs text-on-surface-variant">Verified Authentic</span>
+              <span className="text-xs text-on-surface-variant font-medium">Verified Genuine Products</span>
             </div>
 
             <div className="space-y-4">
               {items.map((item, idx) => {
-                const product = item.product || item;
-                const productId = product.id || item.product_id || 'prod-1';
-                const price = Number(product.price || item.product_price || 0);
+                const targetId = item.product_id || item.product?.id || item.id;
+                const matchedProduct = allProducts.find(p => p.id === targetId) || item.product || item;
+                const price = Number(matchedProduct.price || item.product_price || 0);
                 const qty = item.quantity || 1;
-                const image = product.image || item.product_image || '/products/smartwatch_pro.jpg';
-                const name = product.name || item.product_name;
+                const image = matchedProduct.image || item.product_image || '/products/smartwatch_pro.jpg';
+                const name = matchedProduct.name || item.product_name || 'Product';
+                const subtitle = matchedProduct.subtitle || matchedProduct.brand || 'SonicWear Series';
+                const color = item.selectedColor || matchedProduct.colors?.[0]?.name || 'Standard';
+                const size = item.selectedSize || matchedProduct.sizes?.[0] || 'Standard';
 
                 return (
                   <div
                     key={idx}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/20 hover:border-outline-variant/50 transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-5 bg-surface-container-low rounded-3xl border border-outline-variant/20 hover:border-outline-variant/50 transition-all"
                   >
                     <div className="flex items-center gap-4">
-                      <Link to={`/product/${productId}`}>
+                      <Link to={`/product/${targetId}`} className="flex-shrink-0 group">
                         <img
                           src={image}
                           alt={name}
-                          className="w-20 h-20 object-cover rounded-xl border border-outline-variant/20 hover:scale-105 transition-transform"
+                          className="w-24 h-24 object-cover rounded-2xl border border-outline-variant/30 group-hover:scale-105 transition-transform shadow-sm"
                         />
                       </Link>
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <Link
-                          to={`/product/${productId}`}
-                          className="font-label-md text-sm font-bold text-primary hover:text-secondary transition-colors block"
+                          to={`/product/${targetId}`}
+                          className="font-headline-md text-base font-bold text-primary hover:text-secondary transition-colors block"
                         >
                           {name}
                         </Link>
-                        <p className="text-xs text-on-surface-variant">
-                          Qty: <strong className="text-on-surface">{qty}</strong>
-                          {item.selectedColor ? ` • ${item.selectedColor}` : ''}
-                          {item.selectedSize ? ` • ${item.selectedSize}` : ''}
+                        <p className="text-xs text-on-surface-variant font-medium">
+                          {subtitle}
                         </p>
-                        <p className="font-headline-md text-sm font-bold text-primary">
-                          ${price.toFixed(2)} <span className="text-xs text-on-surface-variant font-normal">each</span>
+                        <div className="flex items-center gap-2 flex-wrap text-xs text-on-surface-variant">
+                          <span className="bg-surface-container px-2 py-0.5 rounded-md font-semibold text-primary">
+                            Color: {color}
+                          </span>
+                          <span className="bg-surface-container px-2 py-0.5 rounded-md font-semibold text-primary">
+                            Size: {size}
+                          </span>
+                          <span>
+                            Qty: <strong className="text-on-surface">{qty}</strong>
+                          </span>
+                        </div>
+                        <p className="font-headline-md text-sm font-bold text-primary pt-1">
+                          ${price.toFixed(2)} <span className="text-xs text-on-surface-variant font-normal">per unit</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-outline-variant/20">
-                      <span className="font-headline-md text-lg font-bold text-primary">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-outline-variant/20">
+                      <span className="font-headline-md text-xl font-bold text-primary">
                         ${(price * qty).toFixed(2)}
                       </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleBuyAgain(product, item.selectedColor, item.selectedSize)}
-                        className="text-xs"
-                        icon="refresh"
-                      >
-                        Buy Again
-                      </Button>
+                      <div className="flex gap-2">
+                        <Link to={`/product/${targetId}`}>
+                          <Button size="sm" variant="ghost" className="text-xs">
+                            View Product
+                          </Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleBuyAgain(matchedProduct, color, size)}
+                          className="text-xs"
+                          icon="refresh"
+                        >
+                          Buy Again
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -244,7 +268,7 @@ export default function OrderDetails() {
               <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
               Delivery Destination
             </h3>
-            <div className="text-xs text-on-surface-variant space-y-1">
+            <div className="text-xs text-on-surface-variant space-y-1.5">
               <p className="font-bold text-on-surface text-sm">{address.name || 'Deva Sanjay'}</p>
               <p>{address.street || address.address || '42 Tech Boulevard, Suite 100'}</p>
               <p>{address.city || 'Bangalore'}, {address.state || 'Karnataka'} {address.pincode || '560001'}</p>
@@ -291,7 +315,7 @@ export default function OrderDetails() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-outline-variant/20 text-xs text-on-surface-variant flex justify-between">
+            <div className="pt-2 border-t border-outline-variant/20 text-xs text-on-surface-variant flex justify-between items-center">
               <span>Payment Status:</span>
               <Badge variant="success" className="text-[10px]">{order.paymentStatus || 'Paid'}</Badge>
             </div>
