@@ -53,7 +53,7 @@ import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollManager />
       <Routes>
         {/* Customer Public & Layout Routes */}

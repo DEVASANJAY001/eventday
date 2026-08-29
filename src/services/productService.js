@@ -189,8 +189,9 @@ export const productService = {
    * Subscribe to realtime product changes
    */
   subscribeToProducts(onChange) {
+    const channelId = `products-listener-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const channel = supabase
-      .channel('public:products')
+      .channel(channelId)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },

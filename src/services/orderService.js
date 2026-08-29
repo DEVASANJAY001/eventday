@@ -228,8 +228,9 @@ export const orderService = {
    * Subscribe to live order events
    */
   subscribeToOrders(onChange) {
+    const channelId = `orders-listener-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const channel = supabase
-      .channel('public:orders')
+      .channel(channelId)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
