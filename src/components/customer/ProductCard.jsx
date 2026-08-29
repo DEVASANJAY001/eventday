@@ -22,7 +22,7 @@ export default function ProductCard({ product, showQuickAdd = true, className = 
 
   return (
     <div
-      className={`bg-surface-container-lowest rounded-2xl p-4 flex flex-col group relative shadow-card-soft hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 border border-outline-variant/20 ${className}`}
+      className={`bg-surface-container-lowest rounded-2xl p-4 flex flex-col group relative shadow-card-soft hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ${className}`}
     >
       {/* Badges */}
       {product.badge && (
@@ -54,10 +54,10 @@ export default function ProductCard({ product, showQuickAdd = true, className = 
         </span>
       </button>
 
-      {/* Image Display */}
+      {/* Image Display without border */}
       <Link
         to={`/product/${product.id}`}
-        className="relative w-full aspect-square mb-4 bg-surface-container-low rounded-xl overflow-hidden p-4 flex items-center justify-center"
+        className="relative w-full aspect-square mb-4 bg-surface-container-low rounded-xl overflow-hidden p-3 flex items-center justify-center"
       >
         <img
           src={product.image}

@@ -77,7 +77,7 @@ export default function ProductDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-section-gap">
         {/* Product Images (Left - Col 7) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="w-full bg-surface-container-low rounded-2xl flex items-center justify-center p-8 md:p-12 relative overflow-hidden group aspect-[4/3] border border-outline-variant/20">
+          <div className="w-full bg-surface-container-low rounded-2xl flex items-center justify-center p-8 md:p-12 relative overflow-hidden group aspect-[4/3]">
             <img
               src={currentImage}
               alt={product.name}

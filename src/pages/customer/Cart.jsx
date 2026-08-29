@@ -186,7 +186,7 @@ export default function Cart() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-gutter">
           {recommendedProducts.map((rec) => (
             <div key={rec.id} className="group flex flex-col">
-              <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden mb-3 aspect-[4/5] flex items-center justify-center border border-outline-variant/20">
+              <div className="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden mb-3 aspect-[4/5] flex items-center justify-center">
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                 <img
                   src={rec.image}
