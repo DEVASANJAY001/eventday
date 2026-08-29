@@ -9,88 +9,110 @@ export default function AddProduct() {
   const [form, setForm] = useState({
     name: '',
     description: '',
-    category: '',
+    category: 'gadgets',
+    brand: 'SonicWear',
     price: '',
-    stock: '',
-    sku: '',
+    originalPrice: '',
+    stock: '50',
+    badge: 'Sale',
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    alert('Product successfully created in local session!');
     navigate('/admin/products');
   };
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Add Product</h1>
-        <p className="text-xs text-gray-500">Create a new catalog entry</p>
+    <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="border-b border-outline-variant/30 pb-4">
+        <h1 className="text-headline-xl font-headline-xl text-primary tracking-tight">
+          Create New Product
+        </h1>
+        <p className="text-body-sm text-on-surface-variant">
+          Add an item to the PioMart live catalog.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white border border-gray-200 p-6 rounded">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest border border-outline-variant/30 p-6 md:p-8 rounded-2xl shadow-card-soft">
         <Input
           label="Product Name"
+          placeholder="e.g. SonicWear Horizon Smartwatch"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
         />
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Description</label>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+            Description
+          </label>
           <textarea
             rows="3"
+            placeholder="Describe product highlights, materials, and battery life..."
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-600"
+            className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-lg px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+            required
           />
         </div>
-        <Select
-          label="Category"
-          placeholder="Select Category"
-          options={[
-            { label: 'Men', value: 'men' },
-            { label: 'Women', value: 'women' },
-            { label: 'Accessories', value: 'accessories' },
-          ]}
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          required
-        />
-        <Input
-          label="Price"
-          type="number"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          required
-        />
-        <Input
-          label="Stock"
-          type="number"
-          value={form.stock}
-          onChange={(e) => setForm({ ...form, stock: e.target.value })}
-          required
-        />
-        <Input
-          label="SKU"
-          value={form.sku}
-          onChange={(e) => setForm({ ...form, sku: e.target.value })}
-          required
-        />
-        
-        {/* Simple File Input placeholder */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Product Image</label>
-          <input type="file" className="text-xs text-gray-500" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label="Category"
+            options={[
+              { label: 'Gadgets & Electronics', value: 'gadgets' },
+              { label: 'Women Fashion', value: 'women' },
+              { label: 'Men Fashion', value: 'men' },
+              { label: 'Home & Living', value: 'home' },
+            ]}
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            required
+          />
+
+          <Input
+            label="Brand"
+            placeholder="e.g. SonicWear"
+            value={form.brand}
+            onChange={(e) => setForm({ ...form, brand: e.target.value })}
+            required
+          />
         </div>
 
-        <div className="flex gap-2 justify-end pt-4">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/products')}
-            className="text-xs border rounded px-4 py-2 hover:bg-gray-50"
-          >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Input
+            label="Selling Price ($)"
+            type="number"
+            placeholder="199.00"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            required
+          />
+          <Input
+            label="Original Price ($)"
+            type="number"
+            placeholder="249.00"
+            value={form.originalPrice}
+            onChange={(e) => setForm({ ...form, originalPrice: e.target.value })}
+          />
+          <Input
+            label="Stock Units"
+            type="number"
+            placeholder="50"
+            value={form.stock}
+            onChange={(e) => setForm({ ...form, stock: e.target.value })}
+            required
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
+          <Button variant="ghost" onClick={() => navigate('/admin/products')}>
             Cancel
-          </button>
-          <Button type="submit">Save Product</Button>
+          </Button>
+          <Button type="submit" variant="secondary">
+            Publish Product
+          </Button>
         </div>
       </form>
     </div>

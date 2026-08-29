@@ -5,9 +5,9 @@ import Footer from '../components/customer/Footer';
 
 export default function CustomerLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-surface font-body-md text-on-surface">
       <Navbar />
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-6 w-full">
+      <main className="w-full pt-[128px] flex-1">
         <Outlet />
       </main>
       <Footer />

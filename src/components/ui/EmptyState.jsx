@@ -1,21 +1,29 @@
 import React from 'react';
+import Button from './Button';
 
 export default function EmptyState({
-  message = "No data available.",
+  title = "No items found",
+  message = "Explore our latest collections to find what you need.",
   ctaText,
   onCtaClick,
+  icon = "shopping_bag",
   className = '',
 }) {
   return (
-    <div className={`p-8 border border-gray-200 rounded bg-gray-50 text-center ${className}`}>
-      <p className="text-sm text-gray-500 mb-4">{message}</p>
+    <div className={`py-16 px-8 border border-outline-variant/30 rounded-2xl bg-surface-container-low/50 text-center flex flex-col items-center justify-center gap-4 ${className}`}>
+      <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+        <span className="material-symbols-outlined text-[32px]">{icon}</span>
+      </div>
+      <div className="space-y-1 max-w-sm">
+        <h3 className="font-headline-md text-headline-md text-on-surface">{title}</h3>
+        <p className="text-body-sm text-on-surface-variant leading-relaxed">{message}</p>
+      </div>
       {ctaText && onCtaClick && (
-        <button
-          onClick={onCtaClick}
-          className="text-xs text-blue-600 hover:underline font-medium"
-        >
-          {ctaText}
-        </button>
+        <div className="pt-2">
+          <Button onClick={onCtaClick} variant="primary">
+            {ctaText}
+          </Button>
+        </div>
       )}
     </div>
   );
