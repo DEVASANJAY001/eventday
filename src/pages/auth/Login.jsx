@@ -7,12 +7,12 @@ import Button from '../../components/ui/Button';
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signInWithGoogle, authError, setAuthError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(authError || '');
 
   const redirectPath = location.state?.from?.pathname || '/';
 

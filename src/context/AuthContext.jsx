@@ -4,7 +4,7 @@ import { profileService } from '../services/profileService';
 
 const AuthContext = createContext();
 
-const DEFAULT_AVATAR = 'https://api.dicebear.com/9.x/initials/svg?seed=User&backgroundColor=4f46e5&textColor=ffffff';
+const DEFAULT_AVATAR = 'https://api.dicebear.com/9.x/initials/svg?seed=User&backgroundColor=00120f&textColor=ffffff';
 
 const ADMIN_EMAILS = ['admin@piomart.com', 'devasanjay001@gmail.com'];
 
@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   /**
    * Fetch or create a profile row for the given auth user
@@ -71,6 +72,46 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // 0. Detect and handle OAuth error or code exchange from URL
+    const handleUrlAuthParams = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+        const error = urlParams.get('error') || hashParams.get('error');
+        const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
+        const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+        const code = urlParams.get('code');
+
+        if (error) {
+          console.warn('[AuthContext] OAuth callback notification:', error, errorDescription || errorCode);
+          setAuthError(errorDescription || 'OAuth authorization was cancelled or expired.');
+          
+          // Clean the URL without reloading to clear bad_oauth_state
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } else if (code) {
+          // Exchange code for session if present
+          try {
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+            if (!exchangeError && data?.session?.user) {
+              setUser(data.session.user);
+              await fetchProfile(data.session.user);
+            }
+          } catch (e) {
+            console.warn('[AuthContext] Code exchange note:', e.message);
+          }
+          // Clean the URL code param
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      } catch (err) {
+        console.warn('[AuthContext] URL auth param processing:', err.message);
+      }
+    };
+
+    handleUrlAuthParams();
+
     // 1. Restore existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user || null;
@@ -100,23 +141,36 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** 1-Click Google OAuth */
+  /** 1-Click Google OAuth Sign-in with dynamic origin redirect */
   const signInWithGoogle = async () => {
+    setAuthError(null);
+    const redirectUrl = `${window.location.origin}/`;
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
-        queryParams: { access_type: 'offline', prompt: 'consent' },
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account',
+        },
       },
     });
-    if (error) throw error;
+    if (error) {
+      setAuthError(error.message);
+      throw error;
+    }
     return data;
   };
 
   /** Email + password login */
   const signInWithEmail = async (email, password) => {
+    setAuthError(null);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      setAuthError(error.message);
+      throw error;
+    }
     setUser(data.user);
     await fetchProfile(data.user);
     return data;
@@ -124,12 +178,16 @@ export function AuthProvider({ children }) {
 
   /** New customer registration */
   const signUpWithEmail = async (email, password, fullName = '') => {
+    setAuthError(null);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName, role: 'customer' } },
     });
-    if (error) throw error;
+    if (error) {
+      setAuthError(error.message);
+      throw error;
+    }
     if (data.user) {
       setUser(data.user);
       await fetchProfile(data.user);
@@ -139,6 +197,7 @@ export function AuthProvider({ children }) {
 
   /** Admin account creation — requires secret passcode */
   const createAdminAccount = async (email, password, fullName, adminSecret) => {
+    setAuthError(null);
     if (adminSecret !== ADMIN_SECRET) {
       throw new Error('Invalid Admin Secret Passcode. Contact store owner for clearance.');
     }
@@ -148,7 +207,10 @@ export function AuthProvider({ children }) {
       password,
       options: { data: { full_name: fullName, role: 'admin' } },
     });
-    if (error) throw error;
+    if (error) {
+      setAuthError(error.message);
+      throw error;
+    }
 
     if (data.user) {
       const adminProfile = {
@@ -174,6 +236,7 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
+    setAuthError(null);
   };
 
   /** Update the current user's profile */
@@ -191,6 +254,8 @@ export function AuthProvider({ children }) {
     profile,
     isAdmin,
     loading,
+    authError,
+    setAuthError,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
