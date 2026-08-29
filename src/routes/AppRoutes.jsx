@@ -35,12 +35,16 @@ import Coupons from '../pages/admin/Coupons';
 import Analytics from '../pages/admin/Analytics';
 import AdminSettings from '../pages/admin/AdminSettings';
 
+// Common
+import ScrollManager from '../components/common/ScrollManager';
+
 // NotFound Page
 import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
+      <ScrollManager />
       <Routes>
         {/* Customer Route Group */}
         <Route element={<CustomerLayout />}>
