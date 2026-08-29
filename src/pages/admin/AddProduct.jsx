@@ -12,12 +12,12 @@ export default function AddProduct() {
     name: '',
     description: '',
     category: 'gadgets',
-    brand: 'SonicWear',
+    brand: '',
     price: '',
     originalPrice: '',
-    stock: '50',
-    badge: 'New',
-    image: '/products/smartwatch_pro.jpg',
+    stock: '',
+    badge: '',
+    image: '',
   });
   const [loading, setLoading] = useState(false);
 

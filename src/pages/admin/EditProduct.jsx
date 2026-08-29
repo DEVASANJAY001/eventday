@@ -16,10 +16,10 @@ export default function EditProduct() {
     category: 'gadgets',
     price: '',
     originalPrice: '',
-    stock: '45',
-    brand: 'SonicWear',
+    stock: '',
+    brand: '',
     badge: '',
-    image: '/products/smartwatch_pro.jpg',
+    image: '',
   });
   const [loading, setLoading] = useState(false);
 
