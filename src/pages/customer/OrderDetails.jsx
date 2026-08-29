@@ -53,16 +53,15 @@ export default function OrderDetails() {
 
   if (loading) {
     return (
-      <div className="max-w-container-max mx-auto px-margin-desktop py-20 flex flex-col items-center justify-center gap-3">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-body-sm text-on-surface-variant font-label-md">Loading Order #{id}...</span>
+      <div className="max-w-container-max mx-auto px-4 sm:px-6 md:px-margin-desktop py-16">
+        <LoadingSpinner label={`Loading Order #${id}...`} />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="max-w-container-max mx-auto px-margin-desktop py-16">
+      <div className="max-w-container-max mx-auto px-4 sm:px-6 md:px-margin-desktop py-12">
         <EmptyState
           title="Order Not Found"
           message={`We couldn't locate order reference "${id}". Please check your order ID or purchase history.`}
@@ -86,80 +85,80 @@ export default function OrderDetails() {
   ];
 
   return (
-    <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-gutter">
+    <div className="flex flex-col w-full max-w-container-max mx-auto px-4 sm:px-6 md:px-margin-desktop py-4 sm:py-8 gap-6">
       {/* Toast Alert */}
       {buyAgainToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-primary text-on-primary px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
-          <span className="material-symbols-outlined text-secondary-container">shopping_cart</span>
-          <span className="text-xs font-bold">{buyAgainToast}</span>
-          <Link to="/cart" className="underline text-xs text-secondary ml-2 font-bold">View Cart</Link>
+        <div className="fixed bottom-6 right-4 sm:right-6 z-50 bg-primary text-on-primary px-4 sm:px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce text-xs sm:text-sm">
+          <span className="material-symbols-outlined text-secondary-container text-[20px]">shopping_cart</span>
+          <span className="font-bold">{buyAgainToast}</span>
+          <Link to="/cart" className="underline text-secondary ml-1 font-bold">View Cart</Link>
         </div>
       )}
 
       {/* Breadcrumbs */}
-      <div className="flex items-center gap-2 text-label-sm text-on-surface-variant uppercase tracking-wider mb-stack-sm print:hidden">
+      <div className="flex items-center gap-2 text-xs sm:text-label-sm text-on-surface-variant uppercase tracking-wider print:hidden">
         <Link to="/" className="hover:text-primary transition-colors font-medium">Home</Link>
-        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
         <Link to="/orders" className="hover:text-primary transition-colors font-medium">My Orders</Link>
-        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
         <span className="text-primary font-bold">{order.id}</span>
       </div>
 
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-outline-variant/30 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4 border-b border-outline-variant/30 pb-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-headline-xl font-headline-xl text-primary tracking-tight">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            <h1 className="font-headline text-xl sm:text-2xl md:text-headline-xl font-bold text-primary tracking-tight">
               Order #{order.id}
             </h1>
-            <Badge variant={status === 'Delivered' ? 'success' : 'bestseller'}>
+            <Badge variant={status === 'Delivered' ? 'success' : 'bestseller'} className="text-[10px] sm:text-xs">
               {status}
             </Badge>
           </div>
-          <p className="text-body-sm text-on-surface-variant mt-1">
+          <p className="text-xs sm:text-body-sm text-on-surface-variant mt-1">
             Placed on <strong className="text-on-surface">{order.date}</strong> • Paid with <strong className="text-on-surface">{order.paymentMethod || 'Credit Card'}</strong>
           </p>
         </div>
 
-        <div className="flex gap-2 print:hidden">
-          <Button variant="outline" size="sm" onClick={handlePrint} icon="print">
-            Print Invoice
+        <div className="flex gap-2 print:hidden self-start sm:self-auto">
+          <Button variant="outline" size="sm" onClick={handlePrint} icon="print" className="text-xs">
+            Print Receipt
           </Button>
-          <Button variant="primary" size="sm" onClick={() => navigate('/orders')} icon="arrow_back">
-            All Orders
+          <Button variant="primary" size="sm" onClick={() => navigate('/orders')} icon="arrow_back" className="text-xs">
+            Back
           </Button>
         </div>
       </div>
 
       {/* Visual Tracking Stepper Card */}
-      <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 md:p-8 shadow-card-soft space-y-6">
-        <div className="flex justify-between items-center border-b border-outline-variant/20 pb-3">
-          <h2 className="font-headline-md text-base font-bold text-primary flex items-center gap-2">
+      <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-card-soft space-y-4 sm:space-y-6">
+        <div className="flex justify-between items-center border-b border-outline-variant/20 pb-3 flex-wrap gap-2">
+          <h2 className="font-headline text-sm sm:text-base font-bold text-primary flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary text-[20px]">local_shipping</span>
             Live Shipment Tracker
           </h2>
-          <span className="text-xs text-on-surface-variant font-mono">
+          <span className="text-[11px] sm:text-xs text-on-surface-variant font-mono">
             Tracking No: <strong className="text-primary">PIO-EXP-{order.id.replace(/[^0-9]/g, '') || '924108'}</strong>
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 relative">
           {stages.map((stage, idx) => (
-            <div key={idx} className="flex md:flex-col items-start gap-4 md:gap-3">
+            <div key={idx} className="flex md:flex-col items-start gap-3">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
                   stage.done
                     ? 'bg-primary text-on-primary shadow-md'
                     : 'bg-surface-container text-on-surface-variant border border-outline-variant/40'
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]">{stage.icon}</span>
+                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">{stage.icon}</span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <span className={`block font-label-md text-xs font-bold ${stage.done ? 'text-primary' : 'text-on-surface-variant'}`}>
                   {stage.title}
                 </span>
-                <p className="text-[11px] text-on-surface-variant leading-tight">{stage.desc}</p>
+                <p className="text-[10px] sm:text-[11px] text-on-surface-variant leading-tight">{stage.desc}</p>
               </div>
             </div>
           ))}
@@ -170,15 +169,15 @@ export default function OrderDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column: Ordered Items */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 md:p-8 shadow-card-soft space-y-4">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-card-soft space-y-4">
             <div className="flex justify-between items-center border-b border-outline-variant/20 pb-3">
-              <h2 className="font-headline-md text-lg text-primary font-bold">
-                Purchased Products & Specifications ({items.length})
+              <h2 className="font-headline text-base sm:text-lg text-primary font-bold">
+                Items in this Order ({items.length})
               </h2>
-              <span className="text-xs text-on-surface-variant font-medium">Verified Genuine Products</span>
+              <span className="text-[10px] sm:text-xs text-on-surface-variant font-medium">Verified Genuine</span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {items.map((item, idx) => {
                 const targetId = item.product_id || item.product?.id || item.id;
                 const matchedProduct = allProducts.find(p => p.id === targetId) || item.product || item;
@@ -186,65 +185,66 @@ export default function OrderDetails() {
                 const qty = item.quantity || 1;
                 const image = matchedProduct.image || item.product_image || '/products/smartwatch_pro.jpg';
                 const name = matchedProduct.name || item.product_name || 'Product';
-                const subtitle = matchedProduct.subtitle || matchedProduct.brand || 'SonicWear Series';
+                const subtitle = matchedProduct.subtitle || matchedProduct.brand || 'SonicWear';
                 const color = item.selectedColor || matchedProduct.colors?.[0]?.name || 'Standard';
                 const size = item.selectedSize || matchedProduct.sizes?.[0] || 'Standard';
 
                 return (
                   <div
                     key={idx}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-5 bg-surface-container-low rounded-3xl border border-outline-variant/20 hover:border-outline-variant/50 transition-all"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 bg-surface-container-low rounded-2xl border border-outline-variant/20 hover:border-outline-variant/40 transition-all"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <Link to={`/product/${targetId}`} className="flex-shrink-0 group">
                         <img
                           src={image}
                           alt={name}
-                          className="w-24 h-24 object-cover rounded-2xl border border-outline-variant/30 group-hover:scale-105 transition-transform shadow-sm"
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl border border-outline-variant/30 group-hover:scale-105 transition-transform shadow-sm"
+                          onError={(e) => { e.target.src = '/products/smartwatch_pro.jpg'; }}
                         />
                       </Link>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <Link
                           to={`/product/${targetId}`}
-                          className="font-headline-md text-base font-bold text-primary hover:text-secondary transition-colors block"
+                          className="font-label-md text-xs sm:text-sm font-bold text-primary hover:text-secondary transition-colors block leading-tight"
                         >
                           {name}
                         </Link>
-                        <p className="text-xs text-on-surface-variant font-medium">
+                        <p className="text-[10px] sm:text-xs text-on-surface-variant font-medium">
                           {subtitle}
                         </p>
-                        <div className="flex items-center gap-2 flex-wrap text-xs text-on-surface-variant">
-                          <span className="bg-surface-container px-2 py-0.5 rounded-md font-semibold text-primary">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-[10px] sm:text-xs text-on-surface-variant">
+                          <span className="bg-surface-container px-1.5 sm:px-2 py-0.5 rounded font-semibold text-primary">
                             Color: {color}
                           </span>
-                          <span className="bg-surface-container px-2 py-0.5 rounded-md font-semibold text-primary">
+                          <span className="bg-surface-container px-1.5 sm:px-2 py-0.5 rounded font-semibold text-primary">
                             Size: {size}
                           </span>
                           <span>
                             Qty: <strong className="text-on-surface">{qty}</strong>
                           </span>
                         </div>
-                        <p className="font-headline-md text-sm font-bold text-primary pt-1">
-                          ${price.toFixed(2)} <span className="text-xs text-on-surface-variant font-normal">per unit</span>
+                        <p className="font-headline font-bold text-xs sm:text-sm text-primary pt-0.5">
+                          ${price.toFixed(2)} <span className="text-[10px] sm:text-xs text-on-surface-variant font-normal">each</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-outline-variant/20">
-                      <span className="font-headline-md text-xl font-bold text-primary">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-outline-variant/15">
+                      <span className="font-headline font-bold text-base sm:text-lg text-primary">
                         ${(price * qty).toFixed(2)}
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5 sm:gap-2">
                         <Link to={`/product/${targetId}`}>
-                          <Button size="sm" variant="ghost" className="text-xs">
-                            View Product
+                          <Button size="sm" variant="ghost" className="text-xs py-1 px-2.5">
+                            View
                           </Button>
                         </Link>
                         <Button
                           size="sm"
                           variant="secondary"
                           onClick={() => handleBuyAgain(matchedProduct, color, size)}
-                          className="text-xs"
+                          className="text-xs py-1 px-2.5"
                           icon="refresh"
                         >
                           Buy Again
@@ -259,25 +259,25 @@ export default function OrderDetails() {
         </div>
 
         {/* Right Column: Address & Payment Breakdown */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Shipping Details */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 shadow-card-soft space-y-3">
-            <h3 className="font-headline-md text-base text-primary font-bold border-b border-outline-variant/20 pb-2 flex items-center gap-2">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-card-soft space-y-3">
+            <h3 className="font-headline text-sm sm:text-base text-primary font-bold border-b border-outline-variant/20 pb-2 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[18px]">location_on</span>
               Delivery Destination
             </h3>
-            <div className="text-xs text-on-surface-variant space-y-1.5">
-              <p className="font-bold text-on-surface text-sm">{address.name || 'Deva Sanjay'}</p>
-              <p>{address.street || address.address || '42 Tech Boulevard, Suite 100'}</p>
-              <p>{address.city || 'Bangalore'}, {address.state || 'Karnataka'} {address.pincode || '560001'}</p>
-              <p className="pt-2">Contact: <strong className="text-on-surface">{address.phone || '+91 98765 43210'}</strong></p>
-              <p>Email: <strong className="text-on-surface">{address.email || user?.email || 'devasanjay001@gmail.com'}</strong></p>
+            <div className="text-xs text-on-surface-variant space-y-1">
+              <p className="font-bold text-on-surface text-xs sm:text-sm">{address.name || 'Customer'}</p>
+              <p>{address.street || address.address || '—'}</p>
+              <p>{address.city || ''}{address.state ? `, ${address.state}` : ''} {address.pincode || ''}</p>
+              {address.phone && <p className="pt-1">Phone: <strong className="text-on-surface">{address.phone}</strong></p>}
+              {address.email && <p>Email: <strong className="text-on-surface">{address.email}</strong></p>}
             </div>
           </div>
 
           {/* Payment & Invoice Summary */}
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-6 shadow-card-soft space-y-3">
-            <h3 className="font-headline-md text-base text-primary font-bold border-b border-outline-variant/20 pb-2 flex items-center gap-2">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-card-soft space-y-3">
+            <h3 className="font-headline text-sm sm:text-base text-primary font-bold border-b border-outline-variant/20 pb-2 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[18px]">receipt</span>
               Invoice Breakdown
             </h3>
@@ -307,14 +307,14 @@ export default function OrderDetails() {
                 <span className="font-semibold text-on-surface">${Number(order.tax || 0).toFixed(2)}</span>
               </div>
 
-              <div className="border-t border-outline-variant/30 pt-3 flex justify-between items-center">
-                <span className="font-headline-md text-sm text-primary font-bold">Grand Total Paid</span>
-                <span className="font-headline-md text-xl text-primary font-bold">${Number(order.amount).toFixed(2)}</span>
+              <div className="border-t border-outline-variant/30 pt-2.5 flex justify-between items-center">
+                <span className="font-headline text-xs sm:text-sm text-primary font-bold">Total Paid</span>
+                <span className="font-headline text-lg sm:text-xl text-primary font-bold">${Number(order.amount).toFixed(2)}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t border-outline-variant/20 text-xs text-on-surface-variant flex justify-between items-center">
-              <span>Payment Status:</span>
+              <span>Payment:</span>
               <Badge variant="success" className="text-[10px]">{order.paymentStatus || 'Paid'}</Badge>
             </div>
           </div>
