@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
+import ImageUpload from '../../components/ui/ImageUpload';
 
 export default function EditProduct() {
   const { id } = useParams();
@@ -19,6 +19,7 @@ export default function EditProduct() {
     stock: '45',
     brand: 'SonicWear',
     badge: '',
+    image: '/products/smartwatch_pro.jpg',
   });
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +35,7 @@ export default function EditProduct() {
           stock: String(product.stock || 45),
           brand: product.brand || 'SonicWear',
           badge: product.badge || '',
+          image: product.image || '/products/smartwatch_pro.jpg',
         });
       }
     });
@@ -65,11 +67,11 @@ export default function EditProduct() {
           Edit Product: {form.name || id}
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Update item pricing, stock levels, or specifications in Supabase.
+          Update item pricing, stock levels, image attachments, or specifications in Supabase.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest border border-outline-variant/30 p-6 md:p-8 rounded-2xl shadow-card-soft">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest border border-outline-variant/30 p-6 md:p-8 rounded-3xl shadow-card-soft">
         <Input
           label="Product Name"
           value={form.name}
@@ -78,14 +80,14 @@ export default function EditProduct() {
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+          <label className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-bold">
             Description
           </label>
           <textarea
             rows="3"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-lg px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+            className="w-full bg-surface-container-low border border-outline-variant/60 rounded-xl px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
             required
           />
         </div>
@@ -129,12 +131,19 @@ export default function EditProduct() {
           />
         </div>
 
+        {/* Image Uploader */}
+        <ImageUpload
+          label="Product Image Attachment"
+          value={form.image}
+          onChange={(url) => setForm({ ...form, image: url })}
+        />
+
         <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
           <Button variant="ghost" onClick={() => navigate('/admin/products')}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Updates'}
+            {loading ? 'Saving to Database...' : 'Save Updates'}
           </Button>
         </div>
       </form>

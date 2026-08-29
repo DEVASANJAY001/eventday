@@ -168,3 +168,30 @@ CREATE POLICY "Public Read Order Items" ON public.order_items FOR SELECT USING (
 ALTER PUBLICATION supabase_realtime ADD TABLE public.products;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.order_items;
+
+-- 12. Storage Bucket for Product Images
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('products', 'products', true, 52428800, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- Storage Policies for 'products' bucket
+DROP POLICY IF EXISTS "Public Read Products Storage" ON storage.objects;
+CREATE POLICY "Public Read Products Storage"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'products');
+
+DROP POLICY IF EXISTS "Public Insert Products Storage" ON storage.objects;
+CREATE POLICY "Public Insert Products Storage"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'products');
+
+DROP POLICY IF EXISTS "Public Update Products Storage" ON storage.objects;
+CREATE POLICY "Public Update Products Storage"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'products');
+
+DROP POLICY IF EXISTS "Public Delete Products Storage" ON storage.objects;
+CREATE POLICY "Public Delete Products Storage"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'products');
+

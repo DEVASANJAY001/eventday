@@ -4,6 +4,7 @@ import { productService } from '../../services/productService';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
+import ImageUpload from '../../components/ui/ImageUpload';
 
 export default function AddProduct() {
   const navigate = useNavigate();
@@ -46,11 +47,11 @@ export default function AddProduct() {
           Create New Product
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Add an item directly to the live Supabase catalog.
+          Upload images directly to Supabase and publish items to the live store.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest border border-outline-variant/30 p-6 md:p-8 rounded-2xl shadow-card-soft">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest border border-outline-variant/30 p-6 md:p-8 rounded-3xl shadow-card-soft">
         <Input
           label="Product Name"
           placeholder="e.g. SonicWear Horizon Smartwatch"
@@ -60,7 +61,7 @@ export default function AddProduct() {
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+          <label className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-bold">
             Description
           </label>
           <textarea
@@ -68,7 +69,7 @@ export default function AddProduct() {
             placeholder="Describe product highlights, materials, and battery life..."
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-lg px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+            className="w-full bg-surface-container-low border border-outline-variant/60 rounded-xl px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
             required
           />
         </div>
@@ -122,11 +123,11 @@ export default function AddProduct() {
           />
         </div>
 
-        <Input
-          label="Product Image URL or Path"
-          placeholder="/products/smartwatch_pro.jpg"
+        {/* Drag & Drop Direct File Image Upload */}
+        <ImageUpload
+          label="Product Photography (Upload to Database)"
           value={form.image}
-          onChange={(e) => setForm({ ...form, image: e.target.value })}
+          onChange={(url) => setForm({ ...form, image: url, thumbnails: [url] })}
         />
 
         <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
@@ -134,7 +135,7 @@ export default function AddProduct() {
             Cancel
           </Button>
           <Button type="submit" variant="secondary" disabled={loading}>
-            {loading ? 'Publishing...' : 'Publish to Database'}
+            {loading ? 'Publishing to Database...' : 'Publish to Database'}
           </Button>
         </div>
       </form>

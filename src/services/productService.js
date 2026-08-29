@@ -31,6 +31,43 @@ function normalizeProduct(p) {
 
 export const productService = {
   /**
+   * Upload an image file to Supabase Storage or convert to DataURL
+   */
+  async uploadProductImage(file) {
+    if (!file) throw new Error('No file provided');
+
+    // 1. Try Supabase Storage
+    try {
+      const ext = file.name ? file.name.split('.').pop() : 'jpg';
+      const cleanName = `prod-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from('products')
+        .upload(cleanName, file, {
+          contentType: file.type || 'image/jpeg',
+          upsert: true,
+        });
+
+      if (!error && data) {
+        const { data: urlData } = supabase.storage.from('products').getPublicUrl(cleanName);
+        if (urlData?.publicUrl) {
+          return urlData.publicUrl;
+        }
+      }
+    } catch (err) {
+      console.warn('[productService] Storage upload note:', err.message);
+    }
+
+    // 2. Fallback: Base64 Data URL
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(file);
+    });
+  },
+
+  /**
    * Fetch all products from Supabase with fallback to local mock data
    */
   async getProducts() {
