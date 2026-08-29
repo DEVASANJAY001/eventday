@@ -141,10 +141,21 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** 1-Click Google OAuth Sign-in with dynamic origin redirect */
+  /** 1-Click Google OAuth Sign-in with explicit target domain redirect */
   const signInWithGoogle = async () => {
     setAuthError(null);
-    const redirectUrl = `${window.location.origin}/`;
+    
+    const isLocal = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    );
+    
+    // Explicitly target https://eventdaydev.vercel.app/ on production (avoids preview alias redirects)
+    const targetBaseUrl = isLocal
+      ? window.location.origin
+      : (import.meta.env.VITE_SITE_URL || 'https://eventdaydev.vercel.app');
+      
+    const redirectUrl = `${targetBaseUrl.replace(/\/$/, '')}/`;
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -162,6 +173,7 @@ export function AuthProvider({ children }) {
     }
     return data;
   };
+
 
   /** Email + password login */
   const signInWithEmail = async (email, password) => {
