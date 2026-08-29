@@ -153,8 +153,8 @@ export const productService = {
       has_motion_view: Boolean(productData.hasMotionView),
       is_deal: Boolean(productData.isDeal),
       featured: Boolean(productData.featured),
-      image: productData.image || '/products/smartwatch_pro.jpg',
-      thumbnails: productData.thumbnails || [productData.image || '/products/smartwatch_pro.jpg'],
+      image: productData.image || null,
+      thumbnails: productData.thumbnails || (productData.image ? [productData.image] : []),
       colors: productData.colors || [],
       sizes: productData.sizes || [],
     };
@@ -177,18 +177,25 @@ export const productService = {
    * Update existing product
    */
   async updateProduct(id, updates) {
-    const row = {
-      name: updates.name,
-      subtitle: updates.subtitle,
-      description: updates.description,
-      price: updates.price,
-      original_price: updates.originalPrice,
-      discount_percentage: updates.discountPercentage,
-      category: updates.category,
-      brand: updates.brand,
-      stock: updates.stock,
-      badge: updates.badge,
-    };
+    // Build row — only include defined fields to avoid overwriting with undefined
+    const row = {};
+    if (updates.name !== undefined)              row.name = updates.name;
+    if (updates.subtitle !== undefined)          row.subtitle = updates.subtitle;
+    if (updates.description !== undefined)       row.description = updates.description;
+    if (updates.price !== undefined)             row.price = updates.price;
+    if (updates.originalPrice !== undefined)     row.original_price = updates.originalPrice;
+    if (updates.discountPercentage !== undefined) row.discount_percentage = updates.discountPercentage;
+    if (updates.category !== undefined)          row.category = updates.category;
+    if (updates.brand !== undefined)             row.brand = updates.brand;
+    if (updates.stock !== undefined)             row.stock = updates.stock;
+    if (updates.badge !== undefined)             row.badge = updates.badge || null;
+    if (updates.inStock !== undefined)           row.in_stock = updates.inStock;
+    // Always persist image changes when provided
+    if (updates.image !== undefined && updates.image !== null && updates.image !== '') {
+      row.image = updates.image;
+      row.thumbnails = updates.thumbnails || [updates.image];
+    }
+    row.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
       .from('products')

@@ -1,15 +1,16 @@
 import { supabase } from '../lib/supabase';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/mockProducts';
 
-export const INITIAL_COUPONS = [
-  { code: 'SAVE10', discount: '10% OFF', discount_percent: 10, discount_type: 'percentage', usage_count: 142, expires_at: '2026-12-31', is_active: true },
-  { code: 'WELCOME20', discount: '20% OFF', discount_percent: 20, discount_type: 'percentage', usage_count: 389, expires_at: '2026-12-31', is_active: true },
-  { code: 'FLASH50', discount: '$50.00 FLAT', discount_percent: 50, discount_type: 'fixed', usage_count: 45, expires_at: '2026-12-31', is_active: true },
+const SEED_COUPONS = [
+  { code: 'SAVE10', discount: '10% OFF', discount_percent: 10, discount_type: 'percentage', usage_count: 0, expires_at: '2027-12-31', is_active: true },
+  { code: 'WELCOME20', discount: '20% OFF', discount_percent: 20, discount_type: 'percentage', usage_count: 0, expires_at: '2027-12-31', is_active: true },
+  { code: 'FLASH50', discount: '50% OFF', discount_percent: 50, discount_type: 'percentage', usage_count: 0, expires_at: '2027-12-31', is_active: true },
 ];
 
 /**
- * Automatically seeds the Supabase database with categories, products, and coupons.
- * Uses upsert to be safely idempotent.
+ * One-time database seeder.
+ * Call this MANUALLY from the admin dashboard or via: node scripts/seedSupabase.js
+ * DO NOT auto-run this on every app load.
  */
 export async function seedDatabase(force = false) {
   try {
@@ -31,7 +32,6 @@ export async function seedDatabase(force = false) {
         description: c.description,
         count: c.count,
       }));
-
       await supabase.from('categories').upsert(formattedCategories, { onConflict: 'id' });
     }
 
@@ -42,7 +42,7 @@ export async function seedDatabase(force = false) {
       .limit(1);
 
     if (!prodCheckError && (force || !existingProducts || existingProducts.length === 0)) {
-      console.log('[DB Seeder] Seeding 12 high-resolution products...');
+      console.log('[DB Seeder] Seeding products...');
       const formattedProducts = MOCK_PRODUCTS.map(p => ({
         id: p.id,
         name: p.name,
@@ -66,7 +66,6 @@ export async function seedDatabase(force = false) {
         colors: p.colors || [],
         sizes: p.sizes || [],
       }));
-
       await supabase.from('products').upsert(formattedProducts, { onConflict: 'id' });
     }
 
@@ -77,14 +76,14 @@ export async function seedDatabase(force = false) {
       .limit(1);
 
     if (!couponCheckError && (force || !existingCoupons || existingCoupons.length === 0)) {
-      console.log('[DB Seeder] Seeding promotional coupons...');
-      await supabase.from('coupons').upsert(INITIAL_COUPONS, { onConflict: 'code' });
+      console.log('[DB Seeder] Seeding coupons...');
+      await supabase.from('coupons').upsert(SEED_COUPONS, { onConflict: 'code' });
     }
 
-    console.log('[DB Seeder] Supabase synchronization complete.');
+    console.log('[DB Seeder] Database seeding complete.');
     return { success: true, message: 'Database seeded successfully' };
   } catch (err) {
-    console.warn('[DB Seeder] Note: Supabase tables might need creation via schema.sql in Supabase SQL editor.', err.message);
+    console.error('[DB Seeder] Error:', err.message);
     return { success: false, error: err.message };
   }
 }

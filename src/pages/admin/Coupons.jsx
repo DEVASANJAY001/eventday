@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import { INITIAL_COUPONS } from '../../services/dbSeeder';
+import { couponService } from '../../services/couponService';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 
 export default function Coupons() {
-  const [couponsList, setCouponsList] = useState(INITIAL_COUPONS);
+  const [couponsList, setCouponsList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newCode, setNewCode] = useState('');
   const [newDiscount, setNewDiscount] = useState('');
   const [creating, setCreating] = useState(false);
 
   const loadCoupons = async () => {
     try {
-      const { data, error } = await supabase
-        .from('coupons')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        setCouponsList(data);
-      }
-    } catch (e) {}
+      const data = await couponService.getAllCoupons();
+      setCouponsList(data || []);
+    } catch (e) {
+      console.warn('Coupons load error:', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -44,12 +42,14 @@ export default function Coupons() {
     };
 
     try {
-      await supabase.from('coupons').upsert([formatted]);
-      setCouponsList(prev => [formatted, ...prev.filter(c => c.code !== formatted.code)]);
+      const saved = await couponService.createCoupon(formatted);
+      setCouponsList(prev => [saved || formatted, ...prev.filter(c => c.code !== formatted.code)]);
       setNewCode('');
       setNewDiscount('');
     } catch (err) {
       console.warn('Coupon creation error:', err.message);
+      // Optimistic UI update even if DB fails
+      setCouponsList(prev => [formatted, ...prev.filter(c => c.code !== formatted.code)]);
     } finally {
       setCreating(false);
     }
@@ -57,9 +57,11 @@ export default function Coupons() {
 
   const handleToggleStatus = async (code, currentStatus) => {
     try {
-      await supabase.from('coupons').update({ is_active: !currentStatus }).eq('code', code);
+      await couponService.toggleCoupon(code, !currentStatus);
       setCouponsList(prev => prev.map(c => c.code === code ? { ...c, is_active: !currentStatus } : c));
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Toggle coupon error:', e.message);
+    }
   };
 
   return (

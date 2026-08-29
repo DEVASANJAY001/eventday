@@ -47,11 +47,12 @@ CREATE TABLE IF NOT EXISTS public.products (
   has_motion_view BOOLEAN DEFAULT false,
   is_deal BOOLEAN DEFAULT false,
   featured BOOLEAN DEFAULT false,
-  image TEXT NOT NULL,
+  image TEXT,
   thumbnails JSONB DEFAULT '[]'::jsonb,
   colors JSONB DEFAULT '[]'::jsonb,
   sizes JSONB DEFAULT '[]'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 5. Orders Table
@@ -131,6 +132,25 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Auto-update updated_at trigger function
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS products_updated_at ON public.products;
+CREATE TRIGGER products_updated_at
+  BEFORE UPDATE ON public.products
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
 
 -- 10. Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

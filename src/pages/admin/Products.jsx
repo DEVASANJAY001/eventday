@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 
 export default function Products() {
   const navigate = useNavigate();
-  const [productsList, setProductsList] = useState(MOCK_PRODUCTS);
+  const [productsList, setProductsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadProducts = () => {
     productService.getProducts().then(data => {
-      setProductsList(data);
+      setProductsList(data || []);
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -52,6 +51,21 @@ export default function Products() {
         </Button>
       </div>
 
+      {loading ? (
+        <div className="flex items-center justify-center py-20 gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-on-surface-variant font-medium">Loading products from database...</span>
+        </div>
+      ) : productsList.length === 0 ? (
+        <div className="text-center py-20 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
+          <span className="material-symbols-outlined text-[48px] text-on-surface-variant mb-3 block">inventory_2</span>
+          <p className="font-bold text-primary">No products yet</p>
+          <p className="text-xs text-on-surface-variant mt-1 mb-4">Add your first product to the catalog.</p>
+          <Button onClick={() => navigate('/admin/products/new')} variant="secondary" icon="add">
+            Add First Product
+          </Button>
+        </div>
+      ) : (
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl overflow-hidden shadow-card-soft">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-xs">
@@ -72,7 +86,7 @@ export default function Products() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <img
-                        src={product.image}
+                        src={product.image || '/products/smartwatch_pro.jpg'}
                         alt={product.name}
                         className="w-10 h-10 object-cover rounded-lg"
                       />
@@ -128,6 +142,7 @@ export default function Products() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

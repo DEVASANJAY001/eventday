@@ -1,15 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { seedDatabase } from '../services/dbSeeder';
+import { profileService } from '../services/profileService';
 
 const AuthContext = createContext();
+
+const DEFAULT_AVATAR = 'https://api.dicebear.com/9.x/initials/svg?seed=User&backgroundColor=4f46e5&textColor=ffffff';
+
+const ADMIN_EMAILS = ['admin@piomart.com', 'devasanjay001@gmail.com'];
+
+/** Derive admin secret from VITE env (proper prefix) or fallback */
+const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET_KEY || 'admin_piomart_2026';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch or create profile row
+  /**
+   * Fetch or create a profile row for the given auth user
+   */
   const fetchProfile = async (currentUser) => {
     if (!currentUser) {
       setProfile(null);
@@ -17,63 +26,63 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (!error && data) {
-        setProfile(data);
-        return data;
+      // Try fetching existing profile
+      const existing = await profileService.getProfile(currentUser.id);
+      if (existing) {
+        setProfile(existing);
+        return existing;
       }
 
-      // If profile record doesn't exist yet, create a fallback profile
+      // Profile doesn't exist — create one
       const userMeta = currentUser.user_metadata || {};
-      const fallbackRole = userMeta.role || (currentUser.email === 'admin@piomart.com' || currentUser.email === 'devasanjay001@gmail.com' ? 'admin' : 'customer');
-      
+      const role = userMeta.role || (ADMIN_EMAILS.includes(currentUser.email) ? 'admin' : 'customer');
+
       const newProfile = {
         id: currentUser.id,
         email: currentUser.email,
         full_name: userMeta.full_name || userMeta.name || currentUser.email.split('@')[0],
-        avatar_url: userMeta.avatar_url || userMeta.picture || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEeZukfD0PyCs7V-ESAVDJOih52NKMIKtgqRy2TfbaHp6bgvBzfimSJR7o9YGazDasJF1Q4dG98hVfgb0cr_vRzM1_JqXupRrQBXiKSZIIGM-LLFByGTfJ5NnQ70Xrnd14nQ3nWZyiRjEDxxN-c2mKP6xdjpNLFMlD4K8_DVV4IooNFYByVFExdd8-03Q8rS9WDtrNqeVaCx0Hs4oCaB0U2BvHR0QHeKW_klE4eI2bNaQfJQE89w',
-        role: fallbackRole,
+        avatar_url: userMeta.avatar_url || userMeta.picture || DEFAULT_AVATAR,
+        role,
+        phone: userMeta.phone || '',
       };
 
       try {
-        await supabase.from('profiles').upsert(newProfile);
-      } catch (e) {
-        // Table might not exist yet
+        const saved = await profileService.upsertProfile(newProfile);
+        setProfile(saved || newProfile);
+        return saved || newProfile;
+      } catch {
+        setProfile(newProfile);
+        return newProfile;
       }
-
-      setProfile(newProfile);
-      return newProfile;
     } catch (err) {
-      console.warn('[AuthContext] Profile fetch note:', err.message);
-      const tempProfile = {
+      console.warn('[AuthContext] Profile fetch error:', err.message);
+      // Minimal fallback so app doesn't break
+      const fallback = {
         id: currentUser.id,
         email: currentUser.email,
         full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
-        avatar_url: currentUser.user_metadata?.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEeZukfD0PyCs7V-ESAVDJOih52NKMIKtgqRy2TfbaHp6bgvBzfimSJR7o9YGazDasJF1Q4dG98hVfgb0cr_vRzM1_JqXupRrQBXiKSZIIGM-LLFByGTfJ5NnQ70Xrnd14nQ3nWZyiRjEDxxN-c2mKP6xdjpNLFMlD4K8_DVV4IooNFYByVFExdd8-03Q8rS9WDtrNqeVaCx0Hs4oCaB0U2BvHR0QHeKW_klE4eI2bNaQfJQE89w',
-        role: (currentUser.email === 'admin@piomart.com' || currentUser.email === 'devasanjay001@gmail.com') ? 'admin' : 'customer',
+        avatar_url: currentUser.user_metadata?.avatar_url || DEFAULT_AVATAR,
+        role: ADMIN_EMAILS.includes(currentUser.email) ? 'admin' : 'customer',
+        phone: '',
       };
-      setProfile(tempProfile);
-      return tempProfile;
+      setProfile(fallback);
+      return fallback;
     }
   };
 
   useEffect(() => {
-    // 1. Initial Session Check
+    // 1. Restore existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user || null;
       setUser(currentUser);
       if (currentUser) {
-        fetchProfile(currentUser);
+        fetchProfile(currentUser).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    // 2. Auth State Change Listener
+    // 2. Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user || null;
       setUser(currentUser);
@@ -85,146 +94,97 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    // 3. Trigger initial database seed check in background
-    seedDatabase().catch(() => {});
-
     return () => {
       subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * 1-Click Google OAuth Sign-in
-   */
+  /** 1-Click Google OAuth */
   const signInWithGoogle = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      console.error('[AuthContext] Google Sign-In Error:', err.message);
-      throw err;
-    }
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
-  /**
-   * Email / Password Login
-   */
+  /** Email + password login */
   const signInWithEmail = async (email, password) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    setUser(data.user);
+    await fetchProfile(data.user);
+    return data;
+  };
+
+  /** New customer registration */
+  const signUpWithEmail = async (email, password, fullName = '') => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName, role: 'customer' } },
+    });
+    if (error) throw error;
+    if (data.user) {
       setUser(data.user);
       await fetchProfile(data.user);
-      return data;
-    } catch (err) {
-      console.error('[AuthContext] Email Sign-In Error:', err.message);
-      throw err;
     }
+    return data;
   };
 
-  /**
-   * Email / Password Sign Up
-   */
-  const signUpWithEmail = async (email, password, fullName = '') => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: 'customer',
-          },
-        },
-      });
-      if (error) throw error;
-      if (data.user) {
-        setUser(data.user);
-        await fetchProfile(data.user);
-      }
-      return data;
-    } catch (err) {
-      console.error('[AuthContext] Sign-Up Error:', err.message);
-      throw err;
-    }
-  };
-
-  /**
-   * Dedicated Admin Account Creation with Security Passcode
-   */
+  /** Admin account creation — requires secret passcode */
   const createAdminAccount = async (email, password, fullName, adminSecret) => {
-    // Verify admin passcode
-    const validSecret = import.meta.env.ADMIN_SECRET_KEY || 'admin_piomart_2026';
-    if (adminSecret !== validSecret && adminSecret !== 'admin_piomart_2026' && adminSecret !== 'piomart2026') {
+    if (adminSecret !== ADMIN_SECRET) {
       throw new Error('Invalid Admin Secret Passcode. Contact store owner for clearance.');
     }
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: 'admin',
-          },
-        },
-      });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName, role: 'admin' } },
+    });
+    if (error) throw error;
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Upsert admin profile
-        const adminProfile = {
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName || 'Store Administrator',
-          role: 'admin',
-          avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEeZukfD0PyCs7V-ESAVDJOih52NKMIKtgqRy2TfbaHp6bgvBzfimSJR7o9YGazDasJF1Q4dG98hVfgb0cr_vRzM1_JqXupRrQBXiKSZIIGM-LLFByGTfJ5NnQ70Xrnd14nQ3nWZyiRjEDxxN-c2mKP6xdjpNLFMlD4K8_DVV4IooNFYByVFExdd8-03Q8rS9WDtrNqeVaCx0Hs4oCaB0U2BvHR0QHeKW_klE4eI2bNaQfJQE89w',
-        };
-
-        try {
-          await supabase.from('profiles').upsert(adminProfile);
-        } catch (e) {}
-
-        setUser(data.user);
-        setProfile(adminProfile);
-      }
-
-      return data;
-    } catch (err) {
-      console.error('[AuthContext] Admin creation error:', err.message);
-      throw err;
+    if (data.user) {
+      const adminProfile = {
+        id: data.user.id,
+        email: data.user.email,
+        full_name: fullName || 'Store Administrator',
+        role: 'admin',
+        avatar_url: DEFAULT_AVATAR,
+        phone: '',
+      };
+      try {
+        await profileService.upsertProfile(adminProfile);
+      } catch {}
+      setUser(data.user);
+      setProfile(adminProfile);
     }
+
+    return data;
   };
 
-  /**
-   * Sign Out
-   */
+  /** Sign out */
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-    } catch (err) {
-      console.error('[AuthContext] Sign-out error:', err.message);
-    }
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
   };
 
-  const isAdmin = profile?.role === 'admin' || user?.email === 'admin@piomart.com' || user?.email === 'devasanjay001@gmail.com';
+  /** Update the current user's profile */
+  const updateProfile = async (updates) => {
+    if (!user?.id) throw new Error('Not authenticated');
+    const updated = await profileService.updateProfile(user.id, updates);
+    setProfile(prev => ({ ...prev, ...updated }));
+    return updated;
+  };
+
+  const isAdmin = profile?.role === 'admin' || ADMIN_EMAILS.includes(user?.email);
 
   const value = {
     user,
@@ -235,6 +195,7 @@ export function AuthProvider({ children }) {
     signInWithEmail,
     signUpWithEmail,
     createAdminAccount,
+    updateProfile,
     signOut,
   };
 

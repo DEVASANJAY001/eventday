@@ -11,25 +11,26 @@ export default function Checkout() {
   const { cartItems, subtotal, discountAmount, shipping, tax, finalTotal, createOrder } = useCart();
 
   const [shippingInfo, setShippingInfo] = useState({
-    name: 'Deva Sanjay',
-    phone: '+91 98765 43210',
-    email: 'devasanjay001@gmail.com',
-    street: '42 Tech Boulevard, Suite 100',
-    city: 'Bangalore',
-    state: 'Karnataka',
-    pincode: '560001',
+    name: '',
+    phone: '',
+    email: '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
   });
 
   useEffect(() => {
     if (user || profile) {
       setShippingInfo(prev => ({
         ...prev,
-        name: profile?.full_name || user?.user_metadata?.full_name || prev.name,
-        email: user?.email || profile?.email || prev.email,
-        phone: profile?.phone || prev.phone,
+        name: profile?.full_name || user?.user_metadata?.full_name || '',
+        email: user?.email || profile?.email || '',
+        phone: profile?.phone || '',
       }));
     }
   }, [user, profile]);
+
 
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [submitting, setSubmitting] = useState(false);

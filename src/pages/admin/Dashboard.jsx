@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
 import { orderService } from '../../services/orderService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
-import { useCart } from '../../context/CartContext';
 import Badge from '../../components/ui/Badge';
 
 export default function Dashboard() {
-  const { orders: localOrders } = useCart();
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [orders, setOrders] = useState(localOrders);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    productService.getProducts().then(setProducts).catch(() => {});
-    orderService.getAllOrders().then(data => {
-      if (data && data.length > 0) setOrders(data);
-    }).catch(() => {});
+    Promise.all([
+      productService.getProducts(),
+      orderService.getAllOrders(),
+    ]).then(([prods, ords]) => {
+      setProducts(prods || []);
+      setOrders(ords || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
 
     const unsubscribeOrders = orderService.subscribeToOrders(() => {
       orderService.getAllOrders().then(data => {
@@ -32,6 +34,7 @@ export default function Dashboard() {
       unsubscribeProducts();
     };
   }, []);
+
 
   const totalRevenue = orders.reduce((acc, o) => acc + (Number(o.amount) || 0), 0);
 
