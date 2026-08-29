@@ -1,5 +1,6 @@
 /**
  * High-quality seed data for PioMart, matching the exact design and catalog in Google Stitch
+ * All images are formatted in uniform 1:1 aspect ratio with commercial studio lighting.
  */
 
 export const MOCK_CATEGORIES = [
@@ -28,13 +29,10 @@ export const MOCK_PRODUCTS = [
     hasMotionView: true,
     isDeal: true,
     featured: true,
-    description: 'Experience the pinnacle of wearable technology. The Wilson Ultra Pro features a stunning OLED display, advanced biometric tracking, and up to 14 days of battery life, wrapped in an aerospace-grade titanium case.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFrzSfPwX9Mq_drwkAlELlSgTC_JH4BHWyz7G_1UdTnXDJYXaqGV_UdrkLfItGfgDMfedKu7qEa57vzsdPE6XOFyoLwY085UGLQ4iNTZ5uqQSMk0-nz1R8AVo6lu2thw5nSHIWjL4_Lm225Y7cvBj0iygHtT4Iwrwf__uqtqg2MPJYXPyL1eJY4A53a0uinxlTjw8XB3C0oXPTyNg77wuxOt7ETUNOfTC5urwv64qvAzpYpe77_w',
+    description: 'Experience the pinnacle of wearable technology. The Wilson Ultra Pro features a stunning round OLED display, advanced biometric tracking, and up to 14 days of battery life, wrapped in an aerospace-grade titanium case.',
+    image: '/products/smartwatch_pro.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDS-qE-HiinML5Cc0k-Wvbyi_U7Fs-_ILbtDb2I3_aBnvzteaIXuwszgmQIbY2zHw4_WIGWyhcK3ASb6dZoBTc0RZD-HJnT1vYc8Sdjga8i2J1ZqlJtdeD0neT95DcK7I0OttsWhvpPTqILyzpKHZDp7xb-OGHrH80PtphW_2e54Tu1QL9SdZuiWYC5B7iXnNQ9NQc-UpAi4WsAqXnMcRgoMexnKhPNF5Xdk9SnvQoXVHCHyXqGKQ',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDJ8YEyxK7C-3La6YAnHnc38AXZmxWsb_NkBT9hXSCjdD5QxXGyFtuIPYkYXIhHjjbO39bJlOefRQDsvRuwWdjo5ySp5qeAb-8Lkl4Row7y-MHC1GxXIL97UKNrs-vs5eXO-5jySx615r0W1LjH8An05dqaMHb6dvTEVj9_Cbl1YqFHidvnFIGvhhdAt3tlILYM_RypF3QUbqadIydtN8_kJHUpkRuCnRHBz0UAkma90SWdvlYkKA',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuC02WY2A3fgvl9yIu-f4MFWSEvaSvhqj84XslZxnHqPBw1pyAXEg_BeMQZuyIJ0fWo7Hgbkmezwyd-YHvuSjSCB2P-0xa6wT_mVAWIHFBtGLYTsHh_XlaNSWDmViPxJtohtfh0X_erEuQy0X5twbYE6-j3XfdekV1DbSfWD7KrhppXrJFkTSPlpfKORqHC8y1do2nOUGjgL5vttlY9mPZ43OP9wTqRrc7zX9bon_gR5v_CExfT-eA',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA7cxbcyj5YJPXHJSdqJm3XlDmyuqNOzH8-w1D10Eg0qtruNDHash-xhacLhNVkitrCwRdOJdFTX3arq4hyAc3Plwycy_zVfIKtzu4u9AX3wy5u6TBmLtkfbBhXWtTrFTxVPjM-u8tC7JkckWEqUty_q9wFlncgNskdz7AQzTWXouL-ABkhB-HseVIFiOJcBeQ1Tl4FEItwuyjElEZ0nUHnF0oQEfEgq8O6YQ73IbzWbQqvzzPmlg',
+      '/products/smartwatch_pro.jpg',
     ],
     colors: [
       { name: 'Midnight Black', hex: '#1A1A1A' },
@@ -61,10 +59,9 @@ export const MOCK_PRODUCTS = [
     isDeal: true,
     featured: true,
     description: 'Industry-leading Active Noise Cancellation with customized acoustic drivers delivering studio-grade sound fidelity and 40 hours of continuous playback.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmWQ5bulyJSluoSHw-I08DD3RJcCJJJ-BRQStap8VO_A7wtIiJCw5MquOXdtkZTDerwLlIcJJezoWSyontIUbOV7VmQZKRRZO3fRdx4ACyOOdj4KZyd3-M6lCJBcyDuDKIZCxvIpFRANN4pMASIh-RPz2vmee0eJFWjVTVQ1OZ7Oik0kHa7kbXSKBhhZycz_1TMzR0XbpNYAbpzWmyTy1wfzJVk7Q41vaKcV7Xi5WS6tjzdWRN8A',
+    image: '/products/headphones_anc.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAmWQ5bulyJSluoSHw-I08DD3RJcCJJJ-BRQStap8VO_A7wtIiJCw5MquOXdtkZTDerwLlIcJJezoWSyontIUbOV7VmQZKRRZO3fRdx4ACyOOdj4KZyd3-M6lCJBcyDuDKIZCxvIpFRANN4pMASIh-RPz2vmee0eJFWjVTVQ1OZ7Oik0kHa7kbXSKBhhZycz_1TMzR0XbpNYAbpzWmyTy1wfzJVk7Q41vaKcV7Xi5WS6tjzdWRN8A',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuB_IVIwYgwn88UzT2ipufVAYNEN-mwEGuASv3Hz7k7Dr4k-tW7jfvq33imGaK_h4ymmoF7sZKlmLtBI9dwDjh1soQ4K86HBpAUmZIp87QZT3h2v7xWlcTdcADyNse5nKPVk7rnb93eA-xcDLkDMG8fhoUYlM19Y9V8mr8_8_VQPZFWyampojtTeb0wAcoqSonNdBzn04A47AX3uu9UFezsAIQ8Z2ZrJxm7i1qNJEiNAV-ldtMqauw',
+      '/products/headphones_anc.jpg',
     ],
     colors: [
       { name: 'Arctic White', hex: '#FFFFFF' },
@@ -91,15 +88,15 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: true,
     description: 'Ultra-compact 4K mirrorless camera with high-speed dual pixel autofocus, interchangeable lens mount, and cinematic color profiling.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYV0IQmWQVX9i8oD1fGQDDjJmLBYxF-inqk5u9FVv9SQwjPKZ3FFDA8YoSYX1L281PNjl-cAAbf6WWiq4yM7RJ593fi-1-CRW47j2zlcAYVnvk-K21_N_OmEV6cvpqRXpVVDPpvibjfan1UOrvPR6Kw_q1K4KFcaCrdWkuMnpvfWVsjipGa3fG5naBuV4o3lTlCBi6_Zkg08zUB9Fq3nkqhW3aTZVLvvoeVEGDFlir0Mq-y4AGlg',
+    image: '/products/camera_mirrorless.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDYV0IQmWQVX9i8oD1fGQDDjJmLBYxF-inqk5u9FVv9SQwjPKZ3FFDA8YoSYX1L281PNjl-cAAbf6WWiq4yM7RJ593fi-1-CRW47j2zlcAYVnvk-K21_N_OmEV6cvpqRXpVVDPpvibjfan1UOrvPR6Kw_q1K4KFcaCrdWkuMnpvfWVsjipGa3fG5naBuV4o3lTlCBi6_Zkg08zUB9Fq3nkqhW3aTZVLvvoeVEGDFlir0Mq-y4AGlg',
+      '/products/camera_mirrorless.jpg',
     ],
     colors: [
       { name: 'Retro Silver', hex: '#D1D5DB' },
       { name: 'Obsidian Black', hex: '#111827' },
     ],
-    sizes: ['Body Only', '18-55mm Kit'],
+    sizes: ['Body Only', '35mm Kit'],
   },
   {
     id: 'prod-4',
@@ -119,9 +116,9 @@ export const MOCK_PRODUCTS = [
     isDeal: true,
     featured: true,
     description: 'Ergonomic in-ear wireless earphones with smart touch gestures, crystal clear call clarity with quad microphones, and wireless Qi charging case.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfBxCY32zbYmcIeC9qLpFKKxrJ5AEXLgfH-qeFOufHUPHUJ7pMOuMgRNP55-nCZaGOp3hgldziqflWTDvOPFXFrL7nixZw-nBT6_plPnzLhBAKK8mjZ3lj_D-S0YcxKdigY2dAlWjSzJfL3N5vgRGHgcQmWR6XRBGJi_myAv4cl2wJhxdbxL4wog1m3u3_7mvXtr671gSAj3_hm_NKB5MMH__Pi2yMxoCANlDW81szHyl9EKySgA',
+    image: '/products/earbuds_pro.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDfBxCY32zbYmcIeC9qLpFKKxrJ5AEXLgfH-qeFOufHUPHUJ7pMOuMgRNP55-nCZaGOp3hgldziqflWTDvOPFXFrL7nixZw-nBT6_plPnzLhBAKK8mjZ3lj_D-S0YcxKdigY2dAlWjSzJfL3N5vgRGHgcQmWR6XRBGJi_myAv4cl2wJhxdbxL4wog1m3u3_7mvXtr671gSAj3_hm_NKB5MMH__Pi2yMxoCANlDW81szHyl9EKySgA',
+      '/products/earbuds_pro.jpg',
     ],
     colors: [
       { name: 'Pebble White', hex: '#F9FAFB' },
@@ -147,9 +144,9 @@ export const MOCK_PRODUCTS = [
     isDeal: true,
     featured: true,
     description: '24/7 heart rate, blood oxygen and sleep tracking with built-in GPS and water resistance up to 50 meters.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxXNp2KclLs5yXZRTpAr5dbA4f5V_LWJ9YS7EmIbMOUX8WppN5GlURoErlV_qnci3JEIi6lW1THwPRtKamc2Ci7knzRMkCDfSwnxPzS5pFkb_jSvsMbxSBzWxmN9DZSAs_DFRJxs6aSPql72bKvylhG7SqlJmOTparYJagYWO_WIK9V_a3g1CWwuCM3HLA3rdjEwqDPdiMHjjg5QkRf1rpDqprAtZliQUOAl-VTN1DMd9h0qLEnQ',
+    image: '/products/smartwatch_pro.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuCxXNp2KclLs5yXZRTpAr5dbA4f5V_LWJ9YS7EmIbMOUX8WppN5GlURoErlV_qnci3JEIi6lW1THwPRtKamc2Ci7knzRMkCDfSwnxPzS5pFkb_jSvsMbxSBzWxmN9DZSAs_DFRJxs6aSPql72bKvylhG7SqlJmOTparYJagYWO_WIK9V_a3g1CWwuCM3HLA3rdjEwqDPdiMHjjg5QkRf1rpDqprAtZliQUOAl-VTN1DMd9h0qLEnQ',
+      '/products/smartwatch_pro.jpg',
     ],
     colors: [
       { name: 'Midnight Black', hex: '#111827' },
@@ -175,15 +172,15 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: false,
     description: 'Conveniently charge your compatible smartphone, smartwatch, and wireless charging case simultaneously with fast magnetic alignment.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDmp4qGtDReAkLVWhJUvpu3dA1gUAv5vLsSthPMo7YqanWkH_k9SoAwAwElkoLfsjWgIhfv1__L-BoYpJwimOs8j3vQa1oMuzklcmICqRutX4ivRAMNg8RKn6_E_7-Wse8g8zkbc3XuQakmjiOIhOanjnSQt8nZRwi4_6zZaZtI_p5FFtEQ-snyCGyU5AiZvyinyiZJ1nMrxCdIyEz7mmf2jkgdGhKZbUMsD1KMoTN4BcpON20Pkw',
+    image: '/products/charger_magsafe.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDmp4qGtDReAkLVWhJUvpu3dA1gUAv5vLsSthPMo7YqanWkH_k9SoAwAwElkoLfsjWgIhfv1__L-BoYpJwimOs8j3vQa1oMuzklcmICqRutX4ivRAMNg8RKn6_E_7-Wse8g8zkbc3XuQakmjiOIhOanjnSQt8nZRwi4_6zZaZtI_p5FFtEQ-snyCGyU5AiZvyinyiZJ1nMrxCdIyEz7mmf2jkgdGhKZbUMsD1KMoTN4BcpON20Pkw',
+      '/products/charger_magsafe.jpg',
     ],
     colors: [
       { name: 'Matte Black', hex: '#18181B' },
       { name: 'Silver White', hex: '#E4E4E7' },
     ],
-    sizes: ['15W Qi'],
+    sizes: ['15W Fast Charge'],
   },
   {
     id: 'prod-7',
@@ -202,10 +199,10 @@ export const MOCK_PRODUCTS = [
     hasMotionView: false,
     isDeal: true,
     featured: false,
-    description: 'High-density lithium-polymer battery packed into an ultra-thin anodized aluminum chassis with 65W Power Delivery output.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiW3ZxNrSkcEPkCGwVUfJENdSlntw8KHqYi1PwqaIt7jJ0Yv6FTQ3mBPn0FRz-9_SwYR3VJavECOHh9o7uq9NbkJ9YRSK8TdGBFjJ7mjwumTfGVR2OFBEy5WxlBERF1W0-DDk2wcpgDe0vnNGojJjmwNiyYN6orF1PrpKJoLkwdT3MzbBEhQH822mGcjbpsHwHH2nRyVzByNiN_cAK3JfKe0YS69rXFuK8yhI9HTmPwLGD6RH4NQ',
+    description: 'High-density lithium-polymer battery packed into an ultra-thin anodized aluminum chassis with 65W Power Delivery output and digital battery readout.',
+    image: '/products/powerbank_slim.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBiW3ZxNrSkcEPkCGwVUfJENdSlntw8KHqYi1PwqaIt7jJ0Yv6FTQ3mBPn0FRz-9_SwYR3VJavECOHh9o7uq9NbkJ9YRSK8TdGBFjJ7mjwumTfGVR2OFBEy5WxlBERF1W0-DDk2wcpgDe0vnNGojJjmwNiyYN6orF1PrpKJoLkwdT3MzbBEhQH822mGcjbpsHwHH2nRyVzByNiN_cAK3JfKe0YS69rXFuK8yhI9HTmPwLGD6RH4NQ',
+      '/products/powerbank_slim.jpg',
     ],
     colors: [
       { name: 'Space Grey', hex: '#4B5563' },
@@ -231,9 +228,9 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: false,
     description: 'Double-braided nylon exterior with reinforced strain relief tested for over 30,000 bends. Supports 100W fast charging and 10Gbps data sync.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA1b2wzWfZytNayxkHwjlovqjppPpzWWqtmyFG5ZVkdmATuMCPeEzfVzGhIZGH9SVEKEOzqNi6yRYA7lRLHqzH24UhOAMLMBRBusZkZmjcuIO8xlO8LuQChBL_ywMe1NK5rbhwfc4_b4pDtOntC51ubCMINfqiUD3pvwqQFUkgcL5Xb8BFFP9N6s6EVELCCe1Sc_wxVq6y80e_J1R2wxEEzWdYVxVyRZqH-tFIb6xvHEqBun4VtrQ',
+    image: '/products/cable_braided.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuA1b2wzWfZytNayxkHwjlovqjppPpzWWqtmyFG5ZVkdmATuMCPeEzfVzGhIZGH9SVEKEOzqNi6yRYA7lRLHqzH24UhOAMLMBRBusZkZmjcuIO8xlO8LuQChBL_ywMe1NK5rbhwfc4_b4pDtOntC51ubCMINfqiUD3pvwqQFUkgcL5Xb8BFFP9N6s6EVELCCe1Sc_wxVq6y80e_J1R2wxEEzWdYVxVyRZqH-tFIb6xvHEqBun4VtrQ',
+      '/products/cable_braided.jpg',
     ],
     colors: [
       { name: 'Charcoal Grey', hex: '#374151' },
@@ -259,9 +256,9 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: false,
     description: 'CNC-machined solid aluminum headphone stand with a soft silicone cradle that protects headband padding while organizing your workstation.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXzG9Crl4dhD6T8g2YdQ0gFObsg7-s_lzdYSOuCr4CKea36l9PEnA2ADAGUdpY9FkrIuovjoy6npixX_JzrxduaeX_JISP8DJ2iPxjxqdnsC3WwrJ2dBMtfJzDcqle9rL7IX_UsWAWc5x4iZrJAcPfnMBJX6ZBy-1AxU1RgRyXGoVQ2SfQFOVJZzSjeb9a-temL1EQv3kL_QwwsDXCnTleUKx39qIrC1IFuNlG8w34bFGkOEOLWQ',
+    image: '/products/stand_aluminum.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBXzG9Crl4dhD6T8g2YdQ0gFObsg7-s_lzdYSOuCr4CKea36l9PEnA2ADAGUdpY9FkrIuovjoy6npixX_JzrxduaeX_JISP8DJ2iPxjxqdnsC3WwrJ2dBMtfJzDcqle9rL7IX_UsWAWc5x4iZrJAcPfnMBJX6ZBy-1AxU1RgRyXGoVQ2SfQFOVJZzSjeb9a-temL1EQv3kL_QwwsDXCnTleUKx39qIrC1IFuNlG8w34bFGkOEOLWQ',
+      '/products/stand_aluminum.jpg',
     ],
     colors: [
       { name: 'Silver Matte', hex: '#D1D5DB' },
@@ -286,10 +283,10 @@ export const MOCK_PRODUCTS = [
     hasMotionView: true,
     isDeal: false,
     featured: true,
-    description: 'Contemporary Scandinavian lounge armchair upholstered in textured ochre-yellow fabric with a sculpted solid beechwood frame.',
-    image: '/hero_furniture.jpg',
+    description: 'Contemporary Scandinavian lounge armchair upholstered in textured ochre-yellow velvet fabric with a sculpted solid beechwood frame.',
+    image: '/products/armchair_ochre.jpg',
     thumbnails: [
-      '/hero_furniture.jpg',
+      '/products/armchair_ochre.jpg',
     ],
     colors: [
       { name: 'Ochre Yellow', hex: '#EAB308' },
@@ -316,9 +313,9 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: true,
     description: 'Crafted from 100% extrafine Australian Merino wool. Breathable, naturally odor-resistant, and tailored for effortless layering across seasons.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxHY7RsuEf4B_lF44kjMOa5VjN-ZP5121JkgpFlfK85DDtehEx9QBSYl_0twuydYuRGujueTr8soGwJDD7aNGbig2IBjVUaWia0EoA5HjpBKBDDSn1unDjVRflWqFfuuXHXmrSfRArSpZv5NSU1uYMww42WsxEycZ5kkVLbCU1o6d_nxfXNpSuIKQJEOlPR2G8Q0RUApJBeQSv9m_hAby9jJTA-uzG2jQELKiFYUQbvoIyl5RxAQ',
+    image: '/products/sweater_mustard.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBxHY7RsuEf4B_lF44kjMOa5VjN-ZP5121JkgpFlfK85DDtehEx9QBSYl_0twuydYuRGujueTr8soGwJDD7aNGbig2IBjVUaWia0EoA5HjpBKBDDSn1unDjVRflWqFfuuXHXmrSfRArSpZv5NSU1uYMww42WsxEycZ5kkVLbCU1o6d_nxfXNpSuIKQJEOlPR2G8Q0RUApJBeQSv9m_hAby9jJTA-uzG2jQELKiFYUQbvoIyl5RxAQ',
+      '/products/sweater_mustard.jpg',
     ],
     colors: [
       { name: 'Mustard Yellow', hex: '#D97706' },
@@ -345,9 +342,9 @@ export const MOCK_PRODUCTS = [
     isDeal: false,
     featured: false,
     description: 'Heavyweight 220 GSM combed organic cotton t-shirt with a pre-shrunk rib collar and clean double-needle stitching.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDofTtB3-ecd-hOR-RMTcNw6GNnUj8ENjrHVbErNGWHoVJclMB_gbDgvKc15nV9hSRsClbBAUHK_v8ZhV0UJO3KQ_GQJOJnSwqJA1V44HAG4SXW4GQr_sdPqZuN9m1fMqjkhMT-k6PUn-oxCFXs20u956stjvcA1HsfMaEQ-aqTzCEVGKqDP82g94rQ9f31Aq693mHO6UqAhX664bc2SaJwkYyyAjGyY3K1D1Koqk6tC7i8-skZqQ',
+    image: '/products/tshirt_white.jpg',
     thumbnails: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDofTtB3-ecd-hOR-RMTcNw6GNnUj8ENjrHVbErNGWHoVJclMB_gbDgvKc15nV9hSRsClbBAUHK_v8ZhV0UJO3KQ_GQJOJnSwqJA1V44HAG4SXW4GQr_sdPqZuN9m1fMqjkhMT-k6PUn-oxCFXs20u956stjvcA1HsfMaEQ-aqTzCEVGKqDP82g94rQ9f31Aq693mHO6UqAhX664bc2SaJwkYyyAjGyY3K1D1Koqk6tC7i8-skZqQ',
+      '/products/tshirt_white.jpg',
     ],
     colors: [
       { name: 'Pure White', hex: '#FFFFFF' },

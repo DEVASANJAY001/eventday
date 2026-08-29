@@ -100,12 +100,11 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="absolute right-0 bottom-0 w-2/3 h-[120%] -mb-8 z-0 overflow-hidden pointer-events-none">
-                <div
-                  className="w-full h-full bg-contain bg-no-repeat bg-bottom group-hover:scale-105 transition-transform duration-700 ease-out"
-                  style={{
-                    backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDofTtB3-ecd-hOR-RMTcNw6GNnUj8ENjrHVbErNGWHoVJclMB_gbDgvKc15nV9hSRsClbBAUHK_v8ZhV0UJO3KQ_GQJOJnSwqJA1V44HAG4SXW4GQr_sdPqZuN9m1fMqjkhMT-k6PUn-oxCFXs20u956stjvcA1HsfMaEQ-aqTzCEVGKqDP82g94rQ9f31Aq693mHO6UqAhX664bc2SaJwkYyyAjGyY3K1D1Koqk6tC7i8-skZqQ')`,
-                  }}
+              <div className="absolute right-0 bottom-0 w-1/2 h-full z-0 overflow-hidden pointer-events-none flex items-center justify-center p-4">
+                <img
+                  src="/products/tshirt_white.jpg"
+                  alt="Women Fashion Sale"
+                  className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
               </div>
             </div>
@@ -128,12 +127,11 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="absolute right-0 bottom-0 w-3/4 h-[115%] z-0 overflow-hidden pointer-events-none">
-                <div
-                  className="w-full h-full bg-contain bg-no-repeat bg-bottom group-hover:scale-105 transition-transform duration-700 ease-out"
-                  style={{
-                    backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxHY7RsuEf4B_lF44kjMOa5VjN-ZP5121JkgpFlfK85DDtehEx9QBSYl_0twuydYuRGujueTr8soGwJDD7aNGbig2IBjVUaWia0EoA5HjpBKBDDSn1unDjVRflWqFfuuXHXmrSfRArSpZv5NSU1uYMww42WsxEycZ5kkVLbCU1o6d_nxfXNpSuIKQJEOlPR2G8Q0RUApJBeQSv9m_hAby9jJTA-uzG2jQELKiFYUQbvoIyl5RxAQ')`,
-                  }}
+              <div className="absolute right-0 bottom-0 w-1/2 h-full z-0 overflow-hidden pointer-events-none flex items-center justify-center p-4">
+                <img
+                  src="/products/sweater_mustard.jpg"
+                  alt="Men Fashion Sale"
+                  className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
               </div>
             </div>
