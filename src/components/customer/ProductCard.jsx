@@ -54,15 +54,15 @@ export default function ProductCard({ product, showQuickAdd = true, className = 
         </span>
       </button>
 
-      {/* Image Display without border */}
+      {/* Image Display */}
       <Link
         to={`/product/${product.id}`}
-        className="relative w-full aspect-square mb-4 bg-surface-container-low rounded-xl overflow-hidden p-3 flex items-center justify-center"
+        className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden flex items-center justify-center bg-surface-container-lowest"
       >
         <img
           src={product.image}
           alt={product.name}
-          className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-108 transition-transform duration-500"
+          className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
       </Link>

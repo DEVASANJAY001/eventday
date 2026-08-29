@@ -208,10 +208,10 @@ export default function Home() {
 
                 <Link
                   to={`/product/${product.id}`}
-                  className="relative w-full aspect-square mb-4 bg-surface-container-low rounded-lg overflow-hidden p-4 flex items-center justify-center"
+                  className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden flex items-center justify-center bg-surface-container-lowest"
                 >
                   <img
-                    className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
                     src={product.image}
                     alt={product.name}
                   />
