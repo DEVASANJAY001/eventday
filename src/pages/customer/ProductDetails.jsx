@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 import ProductGrid from '../../components/customer/ProductGrid';
 import EmptyState from '../../components/ui/EmptyState';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
-  const [product, setProduct] = useState(() => MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0]);
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
+  const [allProducts, setAllProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('specs');
 
   useEffect(() => {
+    setLoading(true);
+    setProduct(null);
     productService.getProductById(id).then(data => {
-      if (data) setProduct(data);
+      setProduct(data || null);
       setLoading(false);
     }).catch(() => setLoading(false));
 
-    productService.getProducts().then(setAllProducts).catch(() => {});
+    productService.getProducts().then(data => setAllProducts(data || [])).catch(() => {});
   }, [id]);
 
   const inWishlist = product ? isInWishlist(product.id) : false;
@@ -43,12 +45,20 @@ export default function ProductDetails() {
     }
   }, [product]);
 
+  if (loading) {
+    return (
+      <div className="max-w-container-max mx-auto px-margin-desktop py-stack-lg">
+        <LoadingSpinner label="Loading product details..." />
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="max-w-container-max mx-auto px-margin-desktop py-stack-lg">
         <EmptyState
           title="Product not found"
-          message="The requested item might be sold out or discontinued."
+          message="The requested item might be sold out or removed from our catalog."
           ctaText="Back to Catalog"
           onCtaClick={() => navigate('/products')}
         />

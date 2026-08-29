@@ -2,22 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../../data/mockProducts';
+import { SkeletonCard } from '../../components/ui/LoadingSpinner';
 
 export default function CategoryPage() {
   const { category } = useParams();
   const normalizedCategory = (category || '').toLowerCase();
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    productService.getProducts().then(setProducts).catch(() => {});
-    productService.getCategories().then(setCategories).catch(() => {});
+    Promise.all([
+      productService.getProducts(),
+      productService.getCategories(),
+    ]).then(([prods, cats]) => {
+      setProducts(prods || []);
+      setCategories(cats || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const categoryMeta = categories.find(c => c.slug === normalizedCategory) || {
-    name: category?.charAt(0).toUpperCase() + category?.slice(1),
-    description: `Explore our collection of ${category}`,
+    name: category ? category.charAt(0).toUpperCase() + category.slice(1) : '',
+    description: `Explore our collection of ${category || 'products'}`,
+    icon: 'inventory_2',
   };
 
   const filteredProducts = normalizedCategory === 'all' || normalizedCategory === 'special-offers'
@@ -42,10 +50,14 @@ export default function CategoryPage() {
             Category Showcase
           </span>
           <h1 className="text-headline-xl font-headline-xl text-primary tracking-tight">
-            {categoryMeta.name}
+            {loading ? (
+              <span className="inline-block w-48 h-8 bg-surface-container-low rounded-lg animate-pulse" />
+            ) : categoryMeta.name}
           </h1>
           <p className="text-body-md text-on-surface-variant mt-2 max-w-lg">
-            {categoryMeta.description}
+            {loading ? (
+              <span className="inline-block w-64 h-4 bg-surface-container-low rounded animate-pulse" />
+            ) : categoryMeta.description}
           </p>
         </div>
 
@@ -54,7 +66,9 @@ export default function CategoryPage() {
             {categoryMeta.icon || 'inventory_2'}
           </span>
           <div>
-            <span className="block font-headline-md text-primary font-bold">{filteredProducts.length}</span>
+            <span className="block font-headline-md text-primary font-bold">
+              {loading ? '—' : filteredProducts.length}
+            </span>
             <span className="text-xs text-on-surface-variant">Available Items</span>
           </div>
         </div>
@@ -62,7 +76,17 @@ export default function CategoryPage() {
 
       {/* Product Grid */}
       <div className="mt-4">
-        <ProductGrid products={filteredProducts} columns={4} />
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <ProductGrid
+            products={filteredProducts}
+            emptyMessage={`No products found in "${categoryMeta.name}" yet.`}
+            columns={4}
+          />
+        )}
       </div>
     </div>
   );

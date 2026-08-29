@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
 import FilterPanel from '../../components/customer/FilterPanel';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
+import { SkeletonCard } from '../../components/ui/LoadingSpinner';
 
 export default function ProductCatalog() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -147,7 +147,19 @@ export default function ProductCatalog() {
 
         {/* Right Grid & Pagination */}
         <div className="flex-1 w-full flex flex-col gap-stack-lg">
-          <ProductGrid products={displayProducts} columns={4} />
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : displayProducts.length === 0 ? (
+            <div className="text-center py-20 space-y-3">
+              <span className="material-symbols-outlined text-[48px] text-on-surface-variant block">search_off</span>
+              <p className="font-bold text-primary">No products match your filters</p>
+              <button type="button" onClick={handleResetFilters} className="text-secondary text-sm hover:underline">Clear filters</button>
+            </div>
+          ) : (
+            <ProductGrid products={displayProducts} columns={4} />
+          )}
 
           {/* Pagination */}
           <div className="flex justify-center items-center gap-2 mt-stack-lg border-t border-outline-variant/30 pt-stack-lg">

@@ -4,10 +4,10 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import EmptyState from '../../components/ui/EmptyState';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 export default function OrderDetails() {
   const { id } = useParams();
@@ -15,15 +15,15 @@ export default function OrderDetails() {
   const { user } = useAuth();
   const { orders, addToCart } = useCart();
 
-  const [order, setOrder] = useState(() => orders.find(o => o.id === id) || null);
-  const [loading, setLoading] = useState(!order);
-  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState([]);
   const [buyAgainToast, setBuyAgainToast] = useState('');
 
   useEffect(() => {
-    productService.getProducts().then(setAllProducts).catch(() => {});
+    productService.getProducts().then(data => setAllProducts(data || [])).catch(() => {});
 
-    // Check if order is already in context
+    // First check context (fastest)
     const localMatch = orders.find(o => o.id === id);
     if (localMatch) {
       setOrder(localMatch);
@@ -31,12 +31,10 @@ export default function OrderDetails() {
       return;
     }
 
-    // Fetch from Supabase
+    // Fallback to Supabase
     orderService.getUserOrders(user?.id, user?.email).then(fetchedOrders => {
       const match = fetchedOrders.find(o => o.id === id);
-      if (match) {
-        setOrder(match);
-      }
+      setOrder(match || null);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id, orders, user]);

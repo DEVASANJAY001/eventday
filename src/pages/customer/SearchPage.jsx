@@ -2,20 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
+import { SkeletonCard } from '../../components/ui/LoadingSpinner';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = (searchParams.get('q') || '').trim().toLowerCase();
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    productService.getProducts().then(setProducts).catch(() => {});
+    productService.getProducts()
+      .then(data => { setProducts(data || []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   const results = query
-    ? products.filter(p => 
-        p.name.toLowerCase().includes(query) ||
+    ? products.filter(p =>
+        p.name?.toLowerCase().includes(query) ||
         (p.subtitle && p.subtitle.toLowerCase().includes(query)) ||
         (p.brand && p.brand.toLowerCase().includes(query)) ||
         (p.category && p.category.toLowerCase().includes(query)) ||
@@ -37,21 +40,29 @@ export default function SearchPage() {
           Search Results
         </h1>
         <p className="text-body-md text-on-surface-variant mt-1">
-          {query ? (
+          {loading ? (
+            'Searching catalog...'
+          ) : query ? (
             <span>
               Found <strong className="text-primary">{results.length}</strong> matching products for &ldquo;<span className="text-primary font-semibold">{query}</span>&rdquo;
             </span>
           ) : (
-            'Showing all curated catalog products'
+            `Showing all ${products.length} products`
           )}
         </p>
       </div>
 
-      <ProductGrid
-        products={results}
-        emptyMessage={`No products found matching "${query}". Try searching for "smartwatch", "headphones", or "fashion".`}
-        columns={4}
-      />
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : (
+        <ProductGrid
+          products={results}
+          emptyMessage={query ? `No products found matching "${query}". Try a different search term.` : 'No products available yet.'}
+          columns={4}
+        />
+      )}
     </div>
   );
 }

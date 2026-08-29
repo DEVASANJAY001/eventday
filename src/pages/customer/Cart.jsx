@@ -4,18 +4,18 @@ import { useCart } from '../../context/CartContext';
 import { productService } from '../../services/productService';
 import PriceSummary from '../../components/customer/PriceSummary';
 import EmptyState from '../../components/ui/EmptyState';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
+import { SkeletonCard } from '../../components/ui/LoadingSpinner';
 
 export default function Cart() {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, addToCart } = useCart();
-  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
+  const [allProducts, setAllProducts] = useState([]);
 
   useEffect(() => {
-    productService.getProducts().then(setAllProducts).catch(() => {});
+    productService.getProducts().then(data => setAllProducts(data || [])).catch(() => {});
   }, []);
 
-  const recommendedProducts = allProducts.slice(4, 8);
+  const recommendedProducts = allProducts.filter(p => !cartItems.find(ci => ci.product?.id === p.id)).slice(0, 4);
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-section-gap">

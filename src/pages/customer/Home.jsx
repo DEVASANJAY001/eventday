@@ -2,33 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductGrid from '../../components/customer/ProductGrid';
 import { productService } from '../../services/productService';
-import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
+import LoadingSpinner, { SkeletonCard } from '../../components/ui/LoadingSpinner';
 
 export default function Home() {
   const { addToCart } = useCart();
   const [dealTab, setDealTab] = useState('all');
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load products from Supabase
   useEffect(() => {
-    productService.getProducts().then(setProducts).catch(() => {});
+    productService.getProducts()
+      .then(data => { setProducts(data || []); setLoading(false); })
+      .catch(() => setLoading(false));
 
     const unsubscribe = productService.subscribeToProducts(() => {
-      productService.getProducts().then(setProducts).catch(() => {});
+      productService.getProducts().then(data => setProducts(data || [])).catch(() => {});
     });
-
     return () => unsubscribe();
   }, []);
 
-  // Countdown timer simulation for Weekly Deals
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 2,
-    minutes: 35,
-    seconds: 40,
-    ms: 40,
-  });
-
+  // Countdown timer
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 35, seconds: 40, ms: 40 });
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
@@ -43,7 +38,7 @@ export default function Home() {
   }, []);
 
   const dealPills = [
-    { id: 'all', label: 'Up to 90% off' },
+    { id: 'all', label: 'All Deals' },
     { id: 'under-50', label: 'Under $50' },
     { id: 'almost-sold', label: 'Almost Sold out', highlight: true },
     { id: 'gadgets', label: 'Gadgets & Tech' },
@@ -51,12 +46,12 @@ export default function Home() {
     { id: 'home', label: 'Home & Living' },
   ];
 
-  const featuredDeals = products.filter(p => p.isDeal).slice(0, 5);
+  const featuredDeals = products.filter(p => p.isDeal || p.badge === 'Sale').slice(0, 5);
   const featuredTrending = products.slice(0, 8);
 
   return (
     <div className="flex flex-col w-full font-body-md text-on-surface">
-      {/* Hero Section (Bento Grid Style from Stitch) */}
+      {/* Hero Section */}
       <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-section-gap w-full mt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter h-auto lg:h-[600px]">
           {/* Main Hero Tile */}
@@ -69,7 +64,7 @@ export default function Home() {
                 Best Furniture<br />& Lifestyle
               </h1>
               <p className="text-body-md text-on-surface-variant mb-8 max-w-sm leading-relaxed">
-                Dining, living, & tech accessories designed to elevate your everyday space in total harmony.
+                Dining, living, & tech accessories designed to elevate your everyday space.
               </p>
               <Link
                 to="/products"
@@ -79,222 +74,123 @@ export default function Home() {
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
             </div>
-
-            <div className="absolute right-0 bottom-0 w-full md:w-3/5 h-3/5 md:h-full z-0 overflow-hidden pointer-events-none">
-              <div
-                className="w-full h-full bg-cover bg-center md:bg-right-bottom group-hover:scale-105 transition-transform duration-700 ease-out"
-                style={{
-                  backgroundImage: `url('/hero_furniture.jpg')`,
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-surface-container-low via-surface-container-low/60 md:via-transparent to-transparent" />
+            <div className="flex-1 h-64 md:h-full relative overflow-hidden flex items-end justify-center p-6">
+              {loading ? (
+                <div className="w-full h-full bg-surface-container-low rounded-xl animate-pulse" />
+              ) : products[0]?.image ? (
+                <img
+                  src={products[0].image}
+                  alt="Featured"
+                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
+                />
+              ) : null}
             </div>
           </div>
 
-          {/* Right Column Bento Tiles */}
-          <div className="lg:col-span-4 flex flex-col gap-gutter h-full">
-            {/* Top Right Tile */}
-            <div className="flex-1 bg-[#F9F5F0] rounded-xl overflow-hidden relative group p-8 transition-all duration-300 hover:shadow-card-hover border border-outline-variant/20 min-h-[260px] flex flex-col justify-between">
-              <div className="relative z-10 h-full flex flex-col justify-between">
-                <div>
-                  <span className="text-secondary font-label-md font-bold uppercase tracking-wider block mb-1">
-                    Super Sale 50%
-                  </span>
-                  <h2 className="font-headline-md text-headline-md text-on-surface leading-tight max-w-[200px]">
-                    Stylish Looks For Any Season
-                  </h2>
-                </div>
+          {/* Side tiles */}
+          <div className="lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-gutter h-full">
+            {loading ? (
+              <>
+                <div className="bg-surface-container-low rounded-xl animate-pulse h-48 lg:h-full" />
+                <div className="bg-surface-container-low rounded-xl animate-pulse h-48 lg:h-full" />
+              </>
+            ) : (
+              <>
                 <Link
-                  to="/category/women"
-                  className="bg-secondary text-on-secondary px-6 py-2.5 rounded-full font-label-sm hover:bg-secondary-container transition-colors self-start shadow-sm mt-4 inline-flex items-center gap-1.5"
+                  to="/category/gadgets"
+                  className="bg-surface-container-low rounded-xl overflow-hidden relative group flex flex-col justify-end p-5 h-48 lg:h-full hover:shadow-card-hover transition-all border border-outline-variant/20"
                 >
-                  Shop Now
-                  <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                  {products[1]?.image && (
+                    <img
+                      src={products[1].image}
+                      alt={products[1]?.name}
+                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
+                  <span className="relative z-10 text-on-surface font-label-md text-sm font-bold">Gadgets & Tech</span>
                 </Link>
-              </div>
-
-              <div className="absolute right-0 bottom-0 w-1/2 h-full z-0 overflow-hidden pointer-events-none flex items-center justify-center p-4">
-                <img
-                  src="/products/tshirt_white.jpg"
-                  alt="Women Fashion Sale"
-                  className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
-                />
-              </div>
-            </div>
-
-            {/* Bottom Right Tile */}
-            <div className="flex-1 bg-surface-container-low rounded-xl overflow-hidden relative group p-8 transition-all duration-300 hover:shadow-card-hover border border-outline-variant/20 min-h-[260px] flex flex-col justify-between">
-              <div className="relative z-10 w-3/5 h-full flex flex-col justify-center">
-                <span className="text-on-surface-variant font-label-sm uppercase tracking-wider block mb-1">
-                  Super Sale 50%
-                </span>
-                <h2 className="font-headline-md text-headline-md text-on-surface leading-tight mb-4">
-                  Stylish Men's<br />Fashion
-                </h2>
                 <Link
-                  to="/category/men"
-                  className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-label-sm hover:bg-primary-container transition-colors self-start shadow-sm inline-flex items-center gap-1.5"
+                  to="/category/home"
+                  className="bg-surface-container-low rounded-xl overflow-hidden relative group flex flex-col justify-end p-5 h-48 lg:h-full hover:shadow-card-hover transition-all border border-outline-variant/20"
                 >
-                  Shop Now
-                  <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                  {products[2]?.image && (
+                    <img
+                      src={products[2].image}
+                      alt={products[2]?.name}
+                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
+                  <span className="relative z-10 text-on-surface font-label-md text-sm font-bold">Home & Living</span>
                 </Link>
-              </div>
-
-              <div className="absolute right-0 bottom-0 w-1/2 h-full z-0 overflow-hidden pointer-events-none flex items-center justify-center p-4">
-                <img
-                  src="/products/sweater_mustard.jpg"
-                  alt="Men Fashion Sale"
-                  className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
-                />
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Weekly Best Deals Section (Deep Forest Background from Stitch) */}
-      <section className="w-full bg-primary py-section-gap text-on-primary">
-        <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
-          {/* Header & Live Countdown Timer */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-            <div>
-              <span className="text-secondary-fixed text-xs font-bold uppercase tracking-widest block mb-1">
-                Flash Discounts
-              </span>
-              <h2 className="font-headline-xl text-headline-xl text-on-primary tracking-tight">
-                Weekly Best Deals
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-4 bg-primary-container px-5 py-2.5 rounded-2xl border border-outline/30">
-              <span className="text-on-primary/80 font-body-sm hidden sm:inline">Limited time only:</span>
-              <div className="flex gap-1.5 font-headline-md text-on-primary items-center">
-                <span className="bg-error px-2.5 py-1 rounded text-on-error font-mono text-sm font-bold">
-                  {String(timeLeft.hours).padStart(2, '0')}
-                </span>
-                <span className="text-error font-bold">:</span>
-                <span className="bg-error px-2.5 py-1 rounded text-on-error font-mono text-sm font-bold">
-                  {String(timeLeft.minutes).padStart(2, '0')}
-                </span>
-                <span className="text-error font-bold">:</span>
-                <span className="bg-error px-2.5 py-1 rounded text-on-error font-mono text-sm font-bold">
-                  {String(timeLeft.seconds).padStart(2, '0')}
-                </span>
-                <span className="text-error font-bold">:</span>
-                <span className="bg-error px-2.5 py-1 rounded text-on-error font-mono text-sm font-bold">
-                  {String(timeLeft.ms).padStart(2, '0')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex flex-wrap gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
-            {dealPills.map(pill => (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={() => setDealTab(pill.id)}
-                className={`px-6 py-2 rounded-full font-label-md transition-all whitespace-nowrap text-sm ${
-                  pill.highlight
-                    ? 'bg-secondary-container text-on-secondary-container font-semibold shadow-sm'
-                    : dealTab === pill.id
-                    ? 'bg-on-primary text-primary font-bold shadow-md'
-                    : 'border border-on-primary/20 text-on-primary hover:bg-on-primary/10'
-                }`}
-              >
-                {pill.label}
-              </button>
-            ))}
-          </div>
-
-          {/* 5-Card Deals Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            {featuredDeals.map((product) => (
-              <div
-                key={product.id}
-                className="bg-surface rounded-xl p-4 flex flex-col group relative shadow-card-soft hover:-translate-y-1 transition-all duration-300 hover:shadow-card-hover text-on-surface"
-              >
-                <span className="absolute top-4 left-4 bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded uppercase z-10">
-                  Sale
-                </span>
-
-                <Link
-                  to={`/product/${product.id}`}
-                  className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden flex items-center justify-center bg-surface-container-lowest"
-                >
-                  <img
-                    className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
-                    src={product.image}
-                    alt={product.name}
-                  />
-                </Link>
-
-                <Link to={`/product/${product.id}`}>
-                  <h3 className="font-label-md text-on-surface hover:text-primary transition-colors mb-2 line-clamp-2 text-sm leading-snug">
-                    {product.name}
-                  </h3>
-                </Link>
-
-                {product.hasMotionView && (
-                  <div className="flex items-center gap-1 mb-2">
-                    <span className="material-symbols-outlined text-[16px] text-surface-variant">
-                      motion_photos_on
-                    </span>
-                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">
-                      Motion View
-                    </span>
-                  </div>
-                )}
-
-                <div className="mt-auto flex items-end justify-between pt-2">
-                  <div>
-                    <span className="font-headline-md text-primary font-bold block text-base sm:text-lg">
-                      ${Number(product.price).toFixed(2)}
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-body-sm text-on-surface-variant line-through text-xs">
-                        ${Number(product.originalPrice).toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => addToCart(product, 1)}
-                    className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-colors shadow-sm"
-                    title="Add to Cart"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">add</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Trending Catalog Section */}
-      <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-section-gap w-full">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+      {/* Featured Deals Section */}
+      <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-section-gap w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-stack-md">
           <div>
-            <span className="text-secondary font-bold text-xs uppercase tracking-widest block mb-1">
-              Curated Picks
-            </span>
-            <h2 className="font-headline-xl text-headline-xl text-primary tracking-tight">
-              Trending Collections
-            </h2>
+            <span className="text-secondary font-bold text-xs uppercase tracking-widest block mb-1">Limited Time</span>
+            <h2 className="font-headline-lg text-primary tracking-tight text-2xl font-bold">Weekly Flash Deals</h2>
           </div>
-          <Link
-            to="/products"
-            className="flex items-center gap-1 text-primary font-label-md hover:underline underline-offset-4 font-semibold"
-          >
-            Explore All Products
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          <div className="flex items-center gap-2 font-mono text-primary font-bold bg-surface-container px-4 py-2 rounded-xl border border-outline-variant/30">
+            <span className="material-symbols-outlined text-secondary text-[18px]">timer</span>
+            <span className="text-sm">
+              {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+            </span>
+          </div>
+        </div>
+
+        {/* Deal pills */}
+        <div className="flex gap-2 flex-wrap mb-6">
+          {dealPills.map(pill => (
+            <button
+              key={pill.id}
+              type="button"
+              onClick={() => setDealTab(pill.id)}
+              className={`px-4 py-1.5 rounded-full font-label-sm text-xs font-semibold transition-all ${
+                dealTab === pill.id
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-variant'
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : featuredDeals.length > 0 ? (
+          <ProductGrid products={featuredDeals} columns={5} />
+        ) : (
+          <ProductGrid products={featuredTrending.slice(0, 5)} columns={5} />
+        )}
+      </section>
+
+      {/* Trending Now */}
+      <section className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-section-gap w-full">
+        <div className="flex items-center justify-between mb-stack-md">
+          <div>
+            <span className="text-secondary font-bold text-xs uppercase tracking-widest block mb-1">Live Catalog</span>
+            <h2 className="font-headline-lg text-primary tracking-tight text-2xl font-bold">All Products</h2>
+          </div>
+          <Link to="/products" className="text-secondary font-bold text-sm hover:underline inline-flex items-center gap-1">
+            View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </Link>
         </div>
 
-        <ProductGrid products={featuredTrending} columns={4} />
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <ProductGrid products={featuredTrending} columns={4} />
+        )}
       </section>
     </div>
   );
