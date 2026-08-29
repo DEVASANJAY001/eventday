@@ -1,27 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { INITIAL_COUPONS } from '../../services/dbSeeder';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 
 export default function Coupons() {
-  const [couponsList, setCouponsList] = useState([
-    { code: 'SAVE10', discount: '10% OFF', type: 'Percentage', usage: 142, expiry: '2026-12-31', active: true },
-    { code: 'WELCOME20', discount: '20% OFF', type: 'Percentage', usage: 389, expiry: '2026-12-31', active: true },
-    { code: 'FLASH50', discount: '$50.00 FLAT', type: 'Fixed', usage: 45, expiry: '2026-09-15', active: false },
-  ]);
-
+  const [couponsList, setCouponsList] = useState(INITIAL_COUPONS);
   const [newCode, setNewCode] = useState('');
   const [newDiscount, setNewDiscount] = useState('');
+  const [creating, setCreating] = useState(false);
 
-  const handleCreateCoupon = (e) => {
+  const loadCoupons = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        setCouponsList(data);
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    loadCoupons();
+  }, []);
+
+  const handleCreateCoupon = async (e) => {
     e.preventDefault();
     if (!newCode) return;
-    setCouponsList(prev => [
-      { code: newCode.toUpperCase(), discount: `${newDiscount}% OFF`, type: 'Percentage', usage: 0, expiry: '2026-12-31', active: true },
-      ...prev
-    ]);
-    setNewCode('');
-    setNewDiscount('');
+    setCreating(true);
+
+    const formatted = {
+      code: newCode.trim().toUpperCase(),
+      discount: `${newDiscount}% OFF`,
+      discount_percent: parseFloat(newDiscount),
+      discount_type: 'percentage',
+      usage_count: 0,
+      expires_at: '2026-12-31',
+      is_active: true,
+    };
+
+    try {
+      await supabase.from('coupons').upsert([formatted]);
+      setCouponsList(prev => [formatted, ...prev.filter(c => c.code !== formatted.code)]);
+      setNewCode('');
+      setNewDiscount('');
+    } catch (err) {
+      console.warn('Coupon creation error:', err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleToggleStatus = async (code, currentStatus) => {
+    try {
+      await supabase.from('coupons').update({ is_active: !currentStatus }).eq('code', code);
+      setCouponsList(prev => prev.map(c => c.code === code ? { ...c, is_active: !currentStatus } : c));
+    } catch (e) {}
   };
 
   return (
@@ -31,7 +69,7 @@ export default function Coupons() {
           Promotional Campaigns & Coupons
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Create voucher codes and manage active discount percentages.
+          Create voucher codes and manage active discount percentages in Supabase.
         </p>
       </div>
 
@@ -57,22 +95,23 @@ export default function Coupons() {
               onChange={(e) => setNewDiscount(e.target.value)}
               required
             />
-            <Button type="submit" variant="secondary" className="w-full">
-              Generate Coupon
+            <Button type="submit" variant="secondary" className="w-full" disabled={creating}>
+              {creating ? 'Saving to Database...' : 'Save to Supabase'}
             </Button>
           </form>
         </div>
 
-        {/* Coupons List */}
+        {/* Existing Coupons Table */}
         <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl overflow-hidden shadow-card-soft">
           <table className="min-w-full text-left text-xs">
             <thead className="bg-surface-container-low text-on-surface-variant uppercase font-bold tracking-wider border-b border-outline-variant/20">
               <tr>
                 <th className="p-4">Code</th>
                 <th className="p-4">Discount</th>
-                <th className="p-4">Total Redemptions</th>
-                <th className="p-4">Valid Until</th>
+                <th className="p-4">Total Uses</th>
+                <th className="p-4">Expiry</th>
                 <th className="p-4">Status</th>
+                <th className="p-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20 text-on-surface">
@@ -81,19 +120,27 @@ export default function Coupons() {
                   <td className="p-4 font-mono font-bold text-sm text-primary">
                     {c.code}
                   </td>
-                  <td className="p-4 font-bold text-secondary">
-                    {c.discount}
+                  <td className="p-4 font-headline-md font-bold text-secondary text-sm">
+                    {c.discount || `${c.discount_percent}% OFF`}
+                  </td>
+                  <td className="p-4 font-medium text-on-surface-variant">
+                    {c.usage_count || 0} times
                   </td>
                   <td className="p-4 text-on-surface-variant">
-                    {c.usage} times
-                  </td>
-                  <td className="p-4 text-on-surface-variant">
-                    {c.expiry}
+                    {c.expires_at || '2026-12-31'}
                   </td>
                   <td className="p-4">
-                    <Badge variant={c.active ? 'success' : 'neutral'}>
-                      {c.active ? 'Active' : 'Expired'}
+                    <Badge variant={c.is_active ? 'success' : 'sale'}>
+                      {c.is_active ? 'Active' : 'Disabled'}
                     </Badge>
+                  </td>
+                  <td className="p-4 text-right">
+                    <button
+                      onClick={() => handleToggleStatus(c.code, c.is_active)}
+                      className="text-xs text-primary hover:underline font-semibold"
+                    >
+                      {c.is_active ? 'Deactivate' : 'Activate'}
+                    </button>
                   </td>
                 </tr>
               ))}

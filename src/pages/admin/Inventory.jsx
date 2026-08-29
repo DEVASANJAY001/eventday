@@ -1,8 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import Badge from '../../components/ui/Badge';
 
 export default function Inventory() {
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [restockingId, setRestockingId] = useState(null);
+
+  const loadData = () => {
+    productService.getProducts().then(setProducts).catch(() => {});
+  };
+
+  useEffect(() => {
+    loadData();
+    const unsubscribe = productService.subscribeToProducts(() => {
+      loadData();
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleQuickRestock = async (productId, currentStock) => {
+    setRestockingId(productId);
+    try {
+      const newStock = (currentStock || 0) + 25;
+      await productService.updateProduct(productId, { stock: newStock });
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock } : p));
+    } catch (e) {
+      console.warn('Restock note:', e.message);
+    } finally {
+      setRestockingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="border-b border-outline-variant/30 pb-4">
@@ -10,7 +39,7 @@ export default function Inventory() {
           Warehouse Inventory & Stock Logs
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Live stock monitoring, low-stock threshold warnings, and restocking logs.
+          Live stock monitoring, low-stock threshold warnings, and 1-click database restocking.
         </p>
       </div>
 
@@ -27,18 +56,18 @@ export default function Inventory() {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20 text-on-surface">
-            {MOCK_PRODUCTS.map((p, idx) => (
+            {products.map((p, idx) => (
               <tr key={p.id} className="hover:bg-surface-container-low/50 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <img
                       src={p.image}
                       alt={p.name}
-                      className="w-10 h-10 object-contain mix-blend-multiply bg-surface-container-low rounded-lg p-1"
+                      className="w-12 h-12 object-cover rounded-xl border border-outline-variant/20"
                     />
                     <div>
                       <span className="font-label-md text-sm font-bold block">{p.name}</span>
-                      <span className="text-[10px] text-on-surface-variant font-mono">SKU-00{idx + 101}</span>
+                      <span className="text-[10px] text-on-surface-variant font-mono">SKU-{p.id.toUpperCase()}</span>
                     </div>
                   </div>
                 </td>
@@ -46,19 +75,23 @@ export default function Inventory() {
                   {p.category}
                 </td>
                 <td className="p-4 font-headline-md font-bold text-sm text-primary">
-                  {p.stock || 30} units
+                  {p.stock || 25} units
                 </td>
                 <td className="p-4 text-on-surface-variant">
                   10 units
                 </td>
                 <td className="p-4">
-                  <Badge variant={(p.stock || 30) > 15 ? 'success' : 'bestseller'}>
-                    {(p.stock || 30) > 15 ? 'Healthy Stock' : 'Low Stock'}
+                  <Badge variant={(p.stock || 25) > 15 ? 'success' : 'bestseller'}>
+                    {(p.stock || 25) > 15 ? 'Healthy Stock' : 'Low Stock'}
                   </Badge>
                 </td>
                 <td className="p-4 text-right">
-                  <button className="bg-surface-container text-primary hover:bg-primary hover:text-on-primary font-bold px-3 py-1.5 rounded-lg transition-colors">
-                    + Restock 50
+                  <button
+                    disabled={restockingId === p.id}
+                    onClick={() => handleQuickRestock(p.id, p.stock)}
+                    className="bg-surface-container text-primary hover:bg-primary hover:text-on-primary font-bold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {restockingId === p.id ? 'Updating...' : '+25 Units'}
                   </button>
                 </td>
               </tr>

@@ -1,13 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { orderService } from '../../services/orderService';
 import Badge from '../../components/ui/Badge';
 
 export default function Customers() {
-  const customerList = [
-    { id: 'CUST-101', name: 'Deva Sanjay', email: 'devasanjay001@gmail.com', ordersCount: 4, spent: '$1,240.00', status: 'Active' },
-    { id: 'CUST-102', name: 'Aarav Sharma', email: 'aarav.sharma@example.com', ordersCount: 2, spent: '$480.00', status: 'Active' },
-    { id: 'CUST-103', name: 'Ananya Rao', email: 'ananya.rao@example.com', ordersCount: 6, spent: '$2,190.00', status: 'Active' },
-    { id: 'CUST-104', name: 'Vikram Singh', email: 'vikram.s@example.com', ordersCount: 1, spent: '$149.00', status: 'Active' },
-  ];
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        const orders = await orderService.getAllOrders();
+
+        if (profiles && profiles.length > 0) {
+          const list = profiles.map(p => {
+            const userOrders = orders.filter(o => o.user_id === p.id || o.user_email === p.email || o.shippingAddress?.email === p.email);
+            const totalSpent = userOrders.reduce((sum, o) => sum + Number(o.amount || 0), 0);
+            return {
+              id: p.id.slice(0, 8).toUpperCase(),
+              name: p.full_name || 'Customer',
+              email: p.email,
+              avatar: p.avatar_url,
+              ordersCount: userOrders.length,
+              spent: `$${totalSpent.toFixed(2)}`,
+              status: p.role === 'admin' ? 'Administrator' : 'Active',
+            };
+          });
+          setCustomers(list);
+        } else {
+          // Derive customer profiles from orders if profiles table is empty
+          const customerMap = new Map();
+          orders.forEach(o => {
+            const email = o.user_email || o.shippingAddress?.email || 'customer@piomart.com';
+            const name = o.shippingAddress?.name || email.split('@')[0];
+            const prev = customerMap.get(email) || { name, email, ordersCount: 0, spent: 0 };
+            prev.ordersCount += 1;
+            prev.spent += Number(o.amount || 0);
+            customerMap.set(email, prev);
+          });
+
+          const derived = Array.from(customerMap.values()).map((c, i) => ({
+            id: `CUST-${100 + i}`,
+            name: c.name,
+            email: c.email,
+            ordersCount: c.ordersCount,
+            spent: `$${c.spent.toFixed(2)}`,
+            status: 'Active',
+          }));
+          setCustomers(derived);
+        }
+      } catch (err) {
+        console.warn('Customers load note:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCustomers();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -16,7 +71,7 @@ export default function Customers() {
           Customer Accounts & Profiles
         </h1>
         <p className="text-body-sm text-on-surface-variant">
-          Registered shopper metrics and transaction lifetime value.
+          Live shopper metrics, registered profiles, and transaction lifetime value in Supabase.
         </p>
       </div>
 
@@ -29,11 +84,10 @@ export default function Customers() {
               <th className="p-4">Orders Placed</th>
               <th className="p-4">Lifetime Spend</th>
               <th className="p-4">Account Status</th>
-              <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20 text-on-surface">
-            {customerList.map((c) => (
+            {customers.map((c) => (
               <tr key={c.id} className="hover:bg-surface-container-low/50 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -56,12 +110,9 @@ export default function Customers() {
                   {c.spent}
                 </td>
                 <td className="p-4">
-                  <Badge variant="success">{c.status}</Badge>
-                </td>
-                <td className="p-4 text-right">
-                  <button className="text-secondary hover:underline font-bold">
-                    View Orders
-                  </button>
+                  <Badge variant={c.status === 'Administrator' ? 'bestseller' : 'success'}>
+                    {c.status}
+                  </Badge>
                 </td>
               </tr>
             ))}

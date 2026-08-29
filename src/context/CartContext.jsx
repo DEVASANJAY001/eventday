@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { MOCK_PRODUCTS } from '../data/mockProducts';
 import { orderService } from '../services/orderService';
 import { couponService } from '../services/couponService';
 import { useAuth } from './AuthContext';
@@ -9,7 +8,7 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const { user } = useAuth();
 
-  // Cart state stored in localStorage
+  // Cart state stored in localStorage (default to empty array)
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_cart');
@@ -17,25 +16,10 @@ export function CartProvider({ children }) {
     } catch (e) {
       console.error(e);
     }
-    return [
-      {
-        id: 'cart-1',
-        product: MOCK_PRODUCTS[0],
-        quantity: 1,
-        selectedColor: 'Midnight Black',
-        selectedSize: 'Medium',
-      },
-      {
-        id: 'cart-2',
-        product: MOCK_PRODUCTS[1],
-        quantity: 1,
-        selectedColor: 'Arctic White',
-        selectedSize: 'Universal',
-      },
-    ];
+    return [];
   });
 
-  // Wishlist IDs stored in localStorage
+  // Wishlist IDs stored in localStorage (default to empty array)
   const [wishlistIds, setWishlistIds] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_wishlist');
@@ -43,35 +27,16 @@ export function CartProvider({ children }) {
     } catch (e) {
       console.error(e);
     }
-    return ['prod-1', 'prod-3'];
+    return [];
   });
 
-  // Orders state
+  // Orders state (default to empty array, populated live from Supabase)
   const [orders, setOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('piomart_orders');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    return [
-      {
-        id: 'ORD-89241',
-        date: '2026-08-28',
-        amount: 349.00,
-        status: 'Delivered',
-        paymentStatus: 'Paid',
-        items: [
-          { product: MOCK_PRODUCTS[1], quantity: 1, selectedColor: 'Arctic White' }
-        ],
-        shippingAddress: {
-          name: 'Deva Sanjay',
-          address: '42 Tech Boulevard, Suite 100',
-          city: 'Bangalore',
-          state: 'Karnataka',
-          pincode: '560001',
-          phone: '+91 98765 43210'
-        }
-      }
-    ];
+    return [];
   });
 
   const [coupon, setCoupon] = useState({ code: '', discountPercent: 0, applied: false });
@@ -84,6 +49,12 @@ export function CartProvider({ children }) {
           setOrders(remoteOrders);
         }
       }).catch(() => {});
+    } else {
+      // If unauthenticated, keep local saved orders
+      try {
+        const saved = localStorage.getItem('piomart_orders');
+        if (saved) setOrders(JSON.parse(saved));
+      } catch (e) {}
     }
   }, [user]);
 
@@ -123,9 +94,10 @@ export function CartProvider({ children }) {
   }, [orders]);
 
   const addToCart = (product, quantity = 1, selectedColor = '', selectedSize = '') => {
+    if (!product) return;
     setCartItems(prev => {
       const existingIndex = prev.findIndex(
-        item => item.product.id === product.id &&
+        item => item.product?.id === product.id &&
                 item.selectedColor === selectedColor &&
                 item.selectedSize === selectedSize
       );
@@ -196,7 +168,7 @@ export function CartProvider({ children }) {
 
   // Price calculations
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.product.price * item.quantity,
+    (acc, item) => acc + (item.product?.price || 0) * item.quantity,
     0
   );
 

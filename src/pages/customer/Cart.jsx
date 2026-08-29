@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { productService } from '../../services/productService';
 import PriceSummary from '../../components/customer/PriceSummary';
 import EmptyState from '../../components/ui/EmptyState';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
@@ -8,8 +9,13 @@ import { MOCK_PRODUCTS } from '../../data/mockProducts';
 export default function Cart() {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, addToCart } = useCart();
+  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
 
-  const recommendedProducts = MOCK_PRODUCTS.slice(5, 9);
+  useEffect(() => {
+    productService.getProducts().then(setAllProducts).catch(() => {});
+  }, []);
+
+  const recommendedProducts = allProducts.slice(4, 8);
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-section-gap">

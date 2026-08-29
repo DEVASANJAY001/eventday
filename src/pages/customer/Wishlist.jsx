@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { productService } from '../../services/productService';
 import { MOCK_PRODUCTS } from '../../data/mockProducts';
 import ProductGrid from '../../components/customer/ProductGrid';
 import EmptyState from '../../components/ui/EmptyState';
@@ -8,8 +9,13 @@ import EmptyState from '../../components/ui/EmptyState';
 export default function Wishlist() {
   const navigate = useNavigate();
   const { wishlistIds } = useCart();
+  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
 
-  const wishlistProducts = MOCK_PRODUCTS.filter(p => wishlistIds.includes(p.id));
+  useEffect(() => {
+    productService.getProducts().then(setAllProducts).catch(() => {});
+  }, []);
+
+  const wishlistProducts = allProducts.filter(p => wishlistIds.includes(p.id));
 
   return (
     <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg gap-gutter">

@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { cartItems, subtotal, discountAmount, shipping, tax, finalTotal, createOrder } = useCart();
 
   const [shippingInfo, setShippingInfo] = useState({
     name: 'Deva Sanjay',
     phone: '+91 98765 43210',
-    email: 'devasanjay@example.com',
+    email: 'devasanjay001@gmail.com',
     street: '42 Tech Boulevard, Suite 100',
     city: 'Bangalore',
     state: 'Karnataka',
     pincode: '560001',
   });
 
+  useEffect(() => {
+    if (user || profile) {
+      setShippingInfo(prev => ({
+        ...prev,
+        name: profile?.full_name || user?.user_metadata?.full_name || prev.name,
+        email: user?.email || profile?.email || prev.email,
+        phone: profile?.phone || prev.phone,
+      }));
+    }
+  }, [user, profile]);
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) {
       navigate('/products');
@@ -29,11 +42,14 @@ export default function Checkout() {
     }
 
     setSubmitting(true);
-    setTimeout(() => {
-      const order = createOrder(shippingInfo, paymentMethod);
+    try {
+      const order = await createOrder(shippingInfo, paymentMethod);
       setSubmitting(false);
       navigate('/order-success', { state: { order } });
-    }, 800);
+    } catch (err) {
+      console.error('[Checkout] Order error:', err);
+      setSubmitting(false);
+    }
   };
 
   if (cartItems.length === 0) {
